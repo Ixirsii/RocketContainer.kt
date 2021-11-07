@@ -1,8 +1,9 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.5.31'
+    id 'application'
+    id 'org.jetbrains.kotlin.jvm' version "$kotlin_version"
 }
 
-group 'org.example'
+group 'com.ryanporterfield.bottlerocket'
 version '1.0-SNAPSHOT'
 
 repositories {
@@ -10,11 +11,17 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.31'
-    testImplementation 'org.jetbrains.kotlin:kotlin-test:1.5.31'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
 
-    implementation 'io.ktor:ktor-server-core:1.6.5'
-    implementation 'io.ktor:ktor-server-netty:1.6.5'
+    implementation 'ch.qos.logback:logback-classic:1.2.6'
+    implementation "io.ktor:ktor-serialization:$ktor_version"
+    implementation "io.ktor:ktor-server-core:$ktor_version"
+    implementation "io.ktor:ktor-server-netty:$ktor_version"
+}
+
+application {
+    mainClass = 'com.ryanporterfield.bottlerocket.ApplicationKt'
 }
 
 test {
