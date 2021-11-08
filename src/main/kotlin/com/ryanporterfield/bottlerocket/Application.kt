@@ -1,6 +1,10 @@
 package com.ryanporterfield.bottlerocket
 
 import io.ktor.application.*
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.features.json.*
+import io.ktor.client.features.json.serializer.*
 import io.ktor.features.*
 import io.ktor.response.*
 import io.ktor.routing.*
@@ -10,11 +14,17 @@ import io.ktor.server.netty.*
 import kotlinx.serialization.json.Json
 
 fun main() {
+    val json = Json {
+        prettyPrint = true
+    }
+    val client = HttpClient(CIO) {
+        install(JsonFeature) {
+            serializer = KotlinxSerializer(json)
+        }
+    }
     embeddedServer(Netty, port = 8080) {
         install(ContentNegotiation) {
-            json(Json {
-                prettyPrint = true
-            })
+            json(json)
         }
         routing {
             get("/") {

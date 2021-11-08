@@ -10,5 +10,9 @@ data class Video(
     val id: Int,
     val playbackUrl: String,
     val title: String,
-    val type: String
-)
+    val type: Type
+) {
+    enum class Type {
+        CLIP, EPISODE, MOVIE
+    }
+}
