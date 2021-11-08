@@ -1,3 +1,9 @@
 # IntelliJ
 .idea/
 *.iml
+
+# Build
+build/
+
+# Logging
+log/

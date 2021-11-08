@@ -14,6 +14,8 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.random.Random
@@ -30,6 +32,8 @@ const val IMAGE_ENDPOINT = "http://images.rocket-stream.bottlerocketservices.com
 /** URL endpoint for video service. */
 const val VIDEO_ENDPOINT = "http://videos.rocket-stream.bottlerocketservices.com/videos"
 
+val log: Logger = LoggerFactory.getLogger("Repository")
+
 /**
  * Get video by ID from video service.
  *
@@ -39,6 +43,7 @@ const val VIDEO_ENDPOINT = "http://videos.rocket-stream.bottlerocketservices.com
  * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun getVideo(client: HttpClient, videoId: Int): Video = runBlocking {
+    log.debug("Getting video {}", videoId)
     get(client, "$VIDEO_ENDPOINT/$videoId")
 }
 
@@ -50,6 +55,7 @@ fun getVideo(client: HttpClient, videoId: Int): Video = runBlocking {
  * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listAdvertisements(client: HttpClient): Advertisements = runBlocking {
+    log.debug("Listing advertisements")
     get(client, ADVERTISEMENT_ENDPOINT)
 }
 
@@ -62,6 +68,7 @@ fun listAdvertisements(client: HttpClient): Advertisements = runBlocking {
  * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listAdvertisements(client: HttpClient, containerId: Int): Advertisements = runBlocking {
+    log.debug("Listing advertisements by container {}", containerId)
     get(client, ADVERTISEMENT_ENDPOINT) {
         parameter("containerId", containerId)
     }
@@ -76,6 +83,7 @@ fun listAdvertisements(client: HttpClient, containerId: Int): Advertisements = r
  * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listAssetReferences(client: HttpClient, videoId: Int): VideoAssets = runBlocking {
+    log.debug("Listing asset references for video {}", videoId)
     get(client, "$VIDEO_ENDPOINT/$videoId/$ASSET_REFERENCE_SUFFIX")
 }
 
@@ -89,6 +97,7 @@ fun listAssetReferences(client: HttpClient, videoId: Int): VideoAssets = runBloc
  * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listAssetReferences(client: HttpClient, videoId: Int, assetType: AssetType): VideoAssets = runBlocking {
+    log.debug("Listing asset references for video {} by type {}", videoId, assetType)
     get(client, "$VIDEO_ENDPOINT/$videoId/$ASSET_REFERENCE_SUFFIX") {
         parameter("assetType", assetType)
     }
@@ -102,6 +111,7 @@ fun listAssetReferences(client: HttpClient, videoId: Int, assetType: AssetType):
  * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listImages(client: HttpClient): Images = runBlocking {
+    log.debug("Listing images")
     get(client, IMAGE_ENDPOINT)
 }
 
@@ -114,6 +124,7 @@ fun listImages(client: HttpClient): Images = runBlocking {
  * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listImages(client: HttpClient, containerId: Int): Images = runBlocking {
+    log.debug("Listing images by container {}", containerId)
     get(client, IMAGE_ENDPOINT) {
         parameter("containerId", containerId)
     }
@@ -127,6 +138,7 @@ fun listImages(client: HttpClient, containerId: Int): Images = runBlocking {
  * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listVideos(client: HttpClient): Videos = runBlocking {
+    log.debug("Listing videos")
     get(client, VIDEO_ENDPOINT)
 }
 
@@ -139,6 +151,7 @@ fun listVideos(client: HttpClient): Videos = runBlocking {
  * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listVideos(client: HttpClient, containerId: Int): Videos = runBlocking {
+    log.debug("Listing videos by container {}", containerId)
     get(client, VIDEO_ENDPOINT) {
         parameter("containerId", containerId)
     }
@@ -153,6 +166,7 @@ fun listVideos(client: HttpClient, containerId: Int): Videos = runBlocking {
  * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listVideos(client: HttpClient, type: VideoType): Videos = runBlocking {
+    log.debug("Listing videos by type {}", type)
     get(client, VIDEO_ENDPOINT) {
         parameter("type", type.name)
     }
@@ -168,6 +182,7 @@ fun listVideos(client: HttpClient, type: VideoType): Videos = runBlocking {
  * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listVideos(client: HttpClient, containerId: Int, type: VideoType): Videos = runBlocking {
+    log.debug("Listing videos by container {} and type {}", containerId, type)
     get(client, VIDEO_ENDPOINT) {
         parameter("containerId", containerId)
         parameter("type", type.name)
@@ -214,8 +229,8 @@ private suspend inline fun <reified T> get(
         try {
             return client.get(url, block)
         } catch (e: ResponseException) {
-            // TODO: Log exception and delay
             val backoff: Long = exponentialBackoff(i)
+            log.trace("Caught ResponseException calling {} on attempt {}. Waiting {}ms", url, i, backoff, e)
             delay(backoff)
         }
     }
