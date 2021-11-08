@@ -35,6 +35,8 @@ const val VIDEO_ENDPOINT = "http://videos.rocket-stream.bottlerocketservices.com
  *
  * @param client HTTP client.
  * @param videoId ID of the video to get.
+ * @return requested video.
+ * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun getVideo(client: HttpClient, videoId: Int): Video = runBlocking {
     get(client, "$VIDEO_ENDPOINT/$videoId")
@@ -44,6 +46,8 @@ fun getVideo(client: HttpClient, videoId: Int): Video = runBlocking {
  * List all advertisements from advertisement service.
  *
  * @param client HTTP client.
+ * @return all advertisements.
+ * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listAdvertisements(client: HttpClient): Advertisements = runBlocking {
     get(client, ADVERTISEMENT_ENDPOINT)
@@ -54,6 +58,8 @@ fun listAdvertisements(client: HttpClient): Advertisements = runBlocking {
  *
  * @param client HTTP client.
  * @param containerId Container ID to filter by.
+ * @return filtered list of advertisements.
+ * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listAdvertisements(client: HttpClient, containerId: Int): Advertisements = runBlocking {
     get(client, ADVERTISEMENT_ENDPOINT) {
@@ -66,6 +72,8 @@ fun listAdvertisements(client: HttpClient, containerId: Int): Advertisements = r
  *
  * @param client HTTP client.
  * @param videoId ID of the video to get assets from.
+ * @return all asset references for specified video.
+ * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listAssetReferences(client: HttpClient, videoId: Int): VideoAssets = runBlocking {
     get(client, "$VIDEO_ENDPOINT/$videoId/$ASSET_REFERENCE_SUFFIX")
@@ -77,6 +85,8 @@ fun listAssetReferences(client: HttpClient, videoId: Int): VideoAssets = runBloc
  * @param client HTTP client.
  * @param videoId ID of the video to get assets from.
  * @param assetType Asset type to filter by.
+ * @return filtered asset references for specified video.
+ * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listAssetReferences(client: HttpClient, videoId: Int, assetType: AssetType): VideoAssets = runBlocking {
     get(client, "$VIDEO_ENDPOINT/$videoId/$ASSET_REFERENCE_SUFFIX") {
@@ -88,6 +98,8 @@ fun listAssetReferences(client: HttpClient, videoId: Int, assetType: AssetType):
  * List all images from image service.
  *
  * @param client HTTP client.
+ * @return all images.
+ * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listImages(client: HttpClient): Images = runBlocking {
     get(client, IMAGE_ENDPOINT)
@@ -98,6 +110,8 @@ fun listImages(client: HttpClient): Images = runBlocking {
  *
  * @param client HTTP client.
  * @param containerId Container ID to filter by.
+ * @return filtered list of images.
+ * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listImages(client: HttpClient, containerId: Int): Images = runBlocking {
     get(client, IMAGE_ENDPOINT) {
@@ -109,6 +123,8 @@ fun listImages(client: HttpClient, containerId: Int): Images = runBlocking {
  * List all videos from video service.
  *
  * @param client HTTP client.
+ * @return all videos.
+ * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listVideos(client: HttpClient): Videos = runBlocking {
     get(client, VIDEO_ENDPOINT)
@@ -119,6 +135,8 @@ fun listVideos(client: HttpClient): Videos = runBlocking {
  *
  * @param client HTTP client.
  * @param containerId Container ID to filter by.
+ * @return filtered list of videos.
+ * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listVideos(client: HttpClient, containerId: Int): Videos = runBlocking {
     get(client, VIDEO_ENDPOINT) {
@@ -131,6 +149,8 @@ fun listVideos(client: HttpClient, containerId: Int): Videos = runBlocking {
  *
  * @param client HTTP client.
  * @param type Video type to filter by.
+ * @return filtered list of videos.
+ * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listVideos(client: HttpClient, type: VideoType): Videos = runBlocking {
     get(client, VIDEO_ENDPOINT) {
@@ -144,6 +164,8 @@ fun listVideos(client: HttpClient, type: VideoType): Videos = runBlocking {
  * @param client HTTP client.
  * @param containerId Container ID to filter by.
  * @param type Video type to filter by.
+ * @return filtered list of videos.
+ * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 fun listVideos(client: HttpClient, containerId: Int, type: VideoType): Videos = runBlocking {
     get(client, VIDEO_ENDPOINT) {
@@ -178,6 +200,7 @@ private fun exponentialBackoff(attempt: Int): Long {
  * @param url Request URL.
  * @param block [HttpRequestBuilder] used to configure the request.
  * @return deserialized data from endpoint.
+ * @throws ResponseException if the maximum number of attempts is exceeded.
  */
 private suspend inline fun <reified T> get(
     client: HttpClient,
