@@ -15,6 +15,7 @@ import kotlinx.serialization.json.Json
 
 fun main() {
     val json = Json {
+        ignoreUnknownKeys = true
         prettyPrint = true
     }
     val client = HttpClient(CIO) {

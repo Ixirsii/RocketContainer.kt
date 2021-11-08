@@ -1,18 +1,32 @@
 package com.ryanporterfield.bottlerocket.repository
 
-import com.ryanporterfield.bottlerocket.data.Advertisement
-import com.ryanporterfield.bottlerocket.data.AssetReference
-import com.ryanporterfield.bottlerocket.data.Image
-import com.ryanporterfield.bottlerocket.data.Video
-import io.ktor.client.*
-import io.ktor.client.request.*
+import com.ryanporterfield.bottlerocket.data.AssetType
+import com.ryanporterfield.bottlerocket.data.VideoType
+import com.ryanporterfield.bottlerocket.data.advertisementService.Advertisements
+import com.ryanporterfield.bottlerocket.data.imageService.Images
+import com.ryanporterfield.bottlerocket.data.videoService.Video
+import com.ryanporterfield.bottlerocket.data.videoService.VideoAssets
+import com.ryanporterfield.bottlerocket.data.videoService.Videos
+import io.ktor.client.HttpClient
+import io.ktor.client.features.ResponseException
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.get
+import io.ktor.client.request.parameter
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlin.math.min
+import kotlin.math.pow
+import kotlin.random.Random
 
 /** Asset reference endpoint is in the format $VIDEO_ENDPOINT/$videoId/$ASSET_REFERENCE_SUFFIX. */
 const val ASSET_REFERENCE_SUFFIX = "asset-references"
+
 /** URL endpoint for advertisement service. */
 const val ADVERTISEMENT_ENDPOINT = "http://ads.rocket-stream.bottlerocketservices.com/advertisements"
+
 /** URL endpoint for image service. */
 const val IMAGE_ENDPOINT = "http://images.rocket-stream.bottlerocketservices.com/images"
+
 /** URL endpoint for video service. */
 const val VIDEO_ENDPOINT = "http://videos.rocket-stream.bottlerocketservices.com/videos"
 
@@ -22,8 +36,8 @@ const val VIDEO_ENDPOINT = "http://videos.rocket-stream.bottlerocketservices.com
  * @param client HTTP client.
  * @param videoId ID of the video to get.
  */
-suspend fun getVideo(client: HttpClient, videoId: Int): Video {
-    return client.get("$VIDEO_ENDPOINT/$videoId")
+fun getVideo(client: HttpClient, videoId: Int): Video = runBlocking {
+    get(client, "$VIDEO_ENDPOINT/$videoId")
 }
 
 /**
@@ -31,8 +45,8 @@ suspend fun getVideo(client: HttpClient, videoId: Int): Video {
  *
  * @param client HTTP client.
  */
-suspend fun listAdvertisements(client: HttpClient): List<Advertisement> {
-    return client.get(ADVERTISEMENT_ENDPOINT)
+fun listAdvertisements(client: HttpClient): Advertisements = runBlocking {
+    get(client, ADVERTISEMENT_ENDPOINT)
 }
 
 /**
@@ -41,8 +55,8 @@ suspend fun listAdvertisements(client: HttpClient): List<Advertisement> {
  * @param client HTTP client.
  * @param containerId Container ID to filter by.
  */
-suspend fun listAdvertisements(client: HttpClient, containerId: Int): List<Advertisement> {
-    return client.get(ADVERTISEMENT_ENDPOINT) {
+fun listAdvertisements(client: HttpClient, containerId: Int): Advertisements = runBlocking {
+    get(client, ADVERTISEMENT_ENDPOINT) {
         parameter("containerId", containerId)
     }
 }
@@ -53,8 +67,8 @@ suspend fun listAdvertisements(client: HttpClient, containerId: Int): List<Adver
  * @param client HTTP client.
  * @param videoId ID of the video to get assets from.
  */
-suspend fun listAssetReferences(client: HttpClient, videoId: Int): List<AssetReference> {
-    return client.get("$VIDEO_ENDPOINT/$videoId/$ASSET_REFERENCE_SUFFIX")
+fun listAssetReferences(client: HttpClient, videoId: Int): VideoAssets = runBlocking {
+    get(client, "$VIDEO_ENDPOINT/$videoId/$ASSET_REFERENCE_SUFFIX")
 }
 
 /**
@@ -64,8 +78,8 @@ suspend fun listAssetReferences(client: HttpClient, videoId: Int): List<AssetRef
  * @param videoId ID of the video to get assets from.
  * @param assetType Asset type to filter by.
  */
-suspend fun listAssetReferences(client: HttpClient, videoId: Int, assetType: AssetReference.Type): List<AssetReference> {
-    return client.get("$VIDEO_ENDPOINT/$videoId/$ASSET_REFERENCE_SUFFIX") {
+fun listAssetReferences(client: HttpClient, videoId: Int, assetType: AssetType): VideoAssets = runBlocking {
+    get(client, "$VIDEO_ENDPOINT/$videoId/$ASSET_REFERENCE_SUFFIX") {
         parameter("assetType", assetType)
     }
 }
@@ -75,8 +89,8 @@ suspend fun listAssetReferences(client: HttpClient, videoId: Int, assetType: Ass
  *
  * @param client HTTP client.
  */
-suspend fun listImages(client: HttpClient): List<Image> {
-    return client.get(IMAGE_ENDPOINT)
+fun listImages(client: HttpClient): Images = runBlocking {
+    get(client, IMAGE_ENDPOINT)
 }
 
 /**
@@ -85,8 +99,8 @@ suspend fun listImages(client: HttpClient): List<Image> {
  * @param client HTTP client.
  * @param containerId Container ID to filter by.
  */
-suspend fun listImages(client: HttpClient, containerId: Int): List<Image> {
-    return client.get(IMAGE_ENDPOINT) {
+fun listImages(client: HttpClient, containerId: Int): Images = runBlocking {
+    get(client, IMAGE_ENDPOINT) {
         parameter("containerId", containerId)
     }
 }
@@ -96,8 +110,8 @@ suspend fun listImages(client: HttpClient, containerId: Int): List<Image> {
  *
  * @param client HTTP client.
  */
-suspend fun listVideos(client: HttpClient): List<Video> {
-    return client.get(VIDEO_ENDPOINT)
+fun listVideos(client: HttpClient): Videos = runBlocking {
+    get(client, VIDEO_ENDPOINT)
 }
 
 /**
@@ -106,8 +120,8 @@ suspend fun listVideos(client: HttpClient): List<Video> {
  * @param client HTTP client.
  * @param containerId Container ID to filter by.
  */
-suspend fun listVideos(client: HttpClient, containerId: Int): List<Video> {
-    return client.get(VIDEO_ENDPOINT) {
+fun listVideos(client: HttpClient, containerId: Int): Videos = runBlocking {
+    get(client, VIDEO_ENDPOINT) {
         parameter("containerId", containerId)
     }
 }
@@ -118,8 +132,8 @@ suspend fun listVideos(client: HttpClient, containerId: Int): List<Video> {
  * @param client HTTP client.
  * @param type Video type to filter by.
  */
-suspend fun listVideos(client: HttpClient, type: Video.Type): List<Video> {
-    return client.get(VIDEO_ENDPOINT) {
+fun listVideos(client: HttpClient, type: VideoType): Videos = runBlocking {
+    get(client, VIDEO_ENDPOINT) {
         parameter("type", type.name)
     }
 }
@@ -131,9 +145,57 @@ suspend fun listVideos(client: HttpClient, type: Video.Type): List<Video> {
  * @param containerId Container ID to filter by.
  * @param type Video type to filter by.
  */
-suspend fun listVideos(client: HttpClient, containerId: Int, type: Video.Type): List<Video> {
-    return client.get(VIDEO_ENDPOINT) {
+fun listVideos(client: HttpClient, containerId: Int, type: VideoType): Videos = runBlocking {
+    get(client, VIDEO_ENDPOINT) {
         parameter("containerId", containerId)
         parameter("type", type.name)
     }
+}
+
+/* ****************************************************************************************************************** *
+ *                                             Private utility functions                                              *
+ * ****************************************************************************************************************** */
+
+/**
+ * Get exponential backoff delay.
+ *
+ * @param attempt Attempt number.
+ * @return exponential backoff delay.
+ */
+private fun exponentialBackoff(attempt: Int): Long {
+    val maxBackoff = 3_000L
+    val exponent: Long = 2f.pow(attempt).toLong()
+    val randomMillis: Long = Random.nextLong(0, 1_000)
+    val backoff: Long = exponent + randomMillis
+
+    return min(backoff, maxBackoff)
+}
+
+/**
+ * Make a get request with retries and exponential backoff.
+ *
+ * @param client HTTP client.
+ * @param url Request URL.
+ * @param block [HttpRequestBuilder] used to configure the request.
+ * @return deserialized data from endpoint.
+ */
+private suspend inline fun <reified T> get(
+    client: HttpClient,
+    url: String,
+    block: HttpRequestBuilder.() -> Unit = {}
+): T {
+    val maxAttempts = 3
+
+    // Start at 1 instead of 0 because the last attempt is outside the loop
+    for (i in (1 until maxAttempts)) {
+        try {
+            return client.get(url, block)
+        } catch (e: ResponseException) {
+            // TODO: Log exception and delay
+            val backoff: Long = exponentialBackoff(i)
+            delay(backoff)
+        }
+    }
+
+    return client.get(url, block)
 }
