@@ -6,7 +6,7 @@ plugins {
     id 'jacoco'
 }
 
-group 'com.ryanporterfield.bottlerocket'
+group 'com.bottlerocket'
 version '1.0-SNAPSHOT'
 
 repositories {
@@ -32,16 +32,16 @@ dependencies {
 }
 
 ext.coverageExclusions = [
-        "com.ryanporterfield.bottlerocket.Application",
-        "com.ryanporterfield.bottlerocket.Logging",
-        "com.ryanporterfield.bottlerocket.data.*",
-        "com.ryanporterfield.bottlerocket.module.*"
+        "com.bottlerocket.Application",
+        "com.bottlerocket.Logging",
+        "com.bottlerocket.data.*",
+        "com.bottlerocket.module.*"
 ]
 
 check.dependsOn jacocoTestCoverageVerification
 
 application {
-    mainClass = 'com.ryanporterfield.bottlerocket.ApplicationKt'
+    mainClass = 'com.bottlerocket.ApplicationKt'
 }
 
 jacoco {
