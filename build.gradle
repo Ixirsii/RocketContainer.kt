@@ -1,7 +1,9 @@
 plugins {
-    id 'application'
     id 'org.jetbrains.kotlin.jvm' version "$kotlin_version"
     id 'org.jetbrains.kotlin.plugin.serialization' version "$kotlin_version"
+
+    id 'application'
+    id 'jacoco'
 }
 
 group 'com.ryanporterfield.bottlerocket'
@@ -13,7 +15,7 @@ repositories {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
 
     implementation 'ch.qos.logback:logback-classic:1.2.6'
     implementation "io.ktor:ktor-client-core:$ktor_version"
@@ -22,12 +24,68 @@ dependencies {
     implementation "io.ktor:ktor-serialization:$ktor_version"
     implementation "io.ktor:ktor-server-core:$ktor_version"
     implementation "io.ktor:ktor-server-netty:$ktor_version"
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+    testImplementation "io.ktor:ktor-client-mock:$ktor_version"
+    testImplementation 'io.mockk:mockk:1.12.0'
 }
+
+ext.coverageExclusions = [
+        "com.ryanporterfield.bottlerocket.Application",
+        "com.ryanporterfield.bottlerocket.Logging",
+        "com.ryanporterfield.bottlerocket.data.*",
+        "com.ryanporterfield.bottlerocket.module.*"
+]
+
+check.dependsOn jacocoTestCoverageVerification
 
 application {
     mainClass = 'com.ryanporterfield.bottlerocket.ApplicationKt'
 }
 
+jacoco {
+    toolVersion = "0.8.7"
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            excludes = coverageExclusions
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.70
+            }
+        }
+    }
+}
+
+jacocoTestReport {
+    description 'Generates Code coverage report. Fails build if it does not meet minimum coverage.'
+    dependsOn test // tests are required to run before generating the report
+
+    reports {
+        xml.required = true    //XML required for the below coverage checks
+        html.required = true
+        csv.required = false
+    }
+
+    def reportExclusions = coverageExclusions.collect {
+        it.replaceAll('\\.', '/') + (it.endsWith('*') ? '' : '*')
+    }
+    afterEvaluate {
+        getClassDirectories().setFrom(classDirectories.files.collect {
+            fileTree(dir: it, exclude: reportExclusions)
+        })
+    }
+}
+
 test {
-    useJUnitPlatform()
+    finalizedBy tasks.jacocoTestReport
+    systemProperty 'junit.jupiter.execution.parallel.enabled', true
+    systemProperty 'junit.jupiter.execution.parallel.mode.default', 'concurrent'
+    useJUnitPlatform() {
+        excludeTags "integration"
+    }
 }

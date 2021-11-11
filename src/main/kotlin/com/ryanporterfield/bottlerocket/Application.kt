@@ -1,5 +1,7 @@
 package com.ryanporterfield.bottlerocket
 
+import com.ryanporterfield.bottlerocket.module.httpClient
+import com.ryanporterfield.bottlerocket.module.json
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.client.HttpClient
@@ -17,15 +19,8 @@ import io.ktor.server.netty.Netty
 import kotlinx.serialization.json.Json
 
 fun main() {
-    val json = Json {
-        ignoreUnknownKeys = true
-        prettyPrint = true
-    }
-    val client = HttpClient(CIO) {
-        install(JsonFeature) {
-            serializer = KotlinxSerializer(json)
-        }
-    }
+    val json = json()
+    val client = httpClient(CIO.create(), json)
     embeddedServer(Netty, port = 8080) {
         install(ContentNegotiation) {
             json(json)
