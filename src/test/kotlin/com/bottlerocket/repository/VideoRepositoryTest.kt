@@ -2,17 +2,12 @@ package com.bottlerocket.repository
 
 import com.bottlerocket.data.AssetType
 import com.bottlerocket.data.VideoType
-import com.bottlerocket.data.advertisementService.Advertisement
-import com.bottlerocket.data.advertisementService.Advertisements
-import com.bottlerocket.data.imageService.Image
-import com.bottlerocket.data.imageService.Images
 import com.bottlerocket.data.videoService.AssetReference
 import com.bottlerocket.data.videoService.Video
 import com.bottlerocket.data.videoService.VideoAssets
 import com.bottlerocket.data.videoService.Videos
 import com.bottlerocket.module.httpClient
 import com.bottlerocket.module.json
-import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.features.ServerResponseException
@@ -21,17 +16,13 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.utils.io.ByteReadChannel
-import io.mockk.junit5.MockKExtension
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.api.extension.ExtendWith
-import kotlin.math.exp
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-@ExtendWith(MockKExtension::class)
-internal class RepositoryTest {
+internal class VideoRepositoryTest {
 
     @Test
     fun `GIVEN videoId WHEN getVideo THEN returns Video`() {
@@ -56,7 +47,7 @@ internal class RepositoryTest {
                 }""".trimMargin()
             )
         )
-        val client = httpClient(mockEngine, json())
+        val underTest = VideoRepository(httpClient(mockEngine, json()))
         val videoId = 1301
         val expected = Video(
             containerId = containerId,
@@ -69,7 +60,7 @@ internal class RepositoryTest {
         )
 
         // When
-        val actual: Video = getVideo(client, videoId)
+        val actual: Video = underTest.getVideo(videoId)
 
         // Then
         assertEquals(expected, actual, "Video should equal expected")
@@ -83,79 +74,16 @@ internal class RepositoryTest {
     fun `GIVEN invalidRequest WHEN getVideo THEN throws ServerResponseException`() {
         // Given
         val mockEngine: MockEngine = getMockEngine()
-        val client = httpClient(mockEngine, json())
+        val underTest = VideoRepository(httpClient(mockEngine, json()))
         val videoId = 0
 
         // When
-        assertThrows<ServerResponseException> { getVideo(client, videoId) }
+        assertThrows<ServerResponseException> { underTest.getVideo(videoId) }
 
         // Then
         assertEquals(3, mockEngine.requestHistory.size, "Should make 3 requests")
         mockEngine.requestHistory.forEach {
             assertTrue("URL should contain video ID") { it.url.toString().endsWith(videoId.toString()) }
-        }
-    }
-
-    @Test
-    fun `GIVEN httpClient WHEN listAdvertisements THEN returns Advertisements`() {
-        // Given
-        val containerId = 1
-        val id = 1
-        val name = "Advertisement"
-        val url = "https://www.google.com"
-        val mockEngine: MockEngine = getMockEngine(
-            ByteReadChannel(
-                """{"advertisements": [{
-                    "containerId": $containerId,
-                    "id": $id,
-                    "name": "$name",
-                    "url": "$url"
-                }]}""".trimIndent()
-            )
-        )
-        val client: HttpClient = httpClient(mockEngine, json())
-        val expected = Advertisements(
-            advertisements = listOf(Advertisement(containerId = containerId, id = id, name = name, url = url))
-        )
-
-        // When
-        val actual: Advertisements = listAdvertisements(client)
-
-        // Then
-        assertEquals(expected, actual, "Advertisements should equal expected")
-        assertEquals(1, mockEngine.requestHistory.size, "Should make 1 request")
-    }
-
-    @Test
-    fun `GIVEN container ID WHEN listAdvertisements THEN returns Advertisements`() {
-        // Given
-        val containerId = 1
-        val id = 1
-        val name = "Advertisement"
-        val url = "https://www.google.com"
-        val mockEngine: MockEngine = getMockEngine(
-            ByteReadChannel(
-                """{"advertisements": [{
-                    "containerId": $containerId,
-                    "id": $id,
-                    "name": "$name",
-                    "url": "$url"
-                }]}""".trimIndent()
-            )
-        )
-        val client: HttpClient = httpClient(mockEngine, json())
-        val expected = Advertisements(
-            advertisements = listOf(Advertisement(containerId = containerId, id = id, name = name, url = url))
-        )
-
-        // When
-        val actual: Advertisements = listAdvertisements(client, containerId)
-
-        // Then
-        assertEquals(expected, actual, "Advertisements should equal expected")
-        assertEquals(1, mockEngine.requestHistory.size, "Should make 1 request")
-        mockEngine.requestHistory.forEach {
-            assertNotNull(it.url.parameters["containerId"], "Query parameters should contain containerId")
         }
     }
 
@@ -174,13 +102,13 @@ internal class RepositoryTest {
                 }]}""".trimIndent()
             )
         )
-        val client: HttpClient = httpClient(mockEngine, json())
+        val underTest = VideoRepository(httpClient(mockEngine, json()))
         val expected = VideoAssets(
             videoAssets = listOf(AssetReference(assetId = assetId, assetType = assetType, videoId = videoId))
         )
 
         // When
-        val actual: VideoAssets = listAssetReferences(client, videoId)
+        val actual: VideoAssets = underTest.listAssetReferences(videoId)
 
         // Then
         assertEquals(expected, actual, "VideoAssets should equal expected")
@@ -205,13 +133,13 @@ internal class RepositoryTest {
                 }]}""".trimIndent()
             )
         )
-        val client: HttpClient = httpClient(mockEngine, json())
+        val underTest = VideoRepository(httpClient(mockEngine, json()))
         val expected = VideoAssets(
             videoAssets = listOf(AssetReference(assetId = assetId, assetType = assetType, videoId = videoId))
         )
 
         // When
-        val actual: VideoAssets = listAssetReferences(client, videoId, assetType)
+        val actual: VideoAssets = underTest.listAssetReferences(videoId, assetType)
 
         // Then
         assertEquals(expected, actual, "VideoAssets should equal expected")
@@ -219,69 +147,6 @@ internal class RepositoryTest {
         mockEngine.requestHistory.forEach {
             assertTrue("URL should contain video ID") { it.url.toString().contains(videoId.toString()) }
             assertNotNull(it.url.parameters["assetType"], "Query parameters should contain assetType")
-        }
-    }
-
-    @Test
-    fun `GIVEN httpClient WHEN listImages THEN returns Images`() {
-        // Given
-        val containerId = 1
-        val id = 1
-        val name = "Image"
-        val url = "https://images.google.com"
-        val mockEngine: MockEngine = getMockEngine(
-            ByteReadChannel(
-                """{"images": [{
-                    "containerId": $containerId,
-                    "id": $id,
-                    "name": "$name",
-                    "url": "$url"
-                }]}""".trimIndent()
-            )
-        )
-        val client: HttpClient = httpClient(mockEngine, json())
-        val expected = Images(
-            images = listOf(Image(containerId = containerId, id = id, name = name, url = url))
-        )
-
-        // When
-        val actual: Images = listImages(client)
-
-        // Then
-        assertEquals(expected, actual, "Images should equal expected")
-        assertEquals(1, mockEngine.requestHistory.size, "Should make 1 request")
-    }
-
-    @Test
-    fun `GIVEN containerId WHEN listImages THEN returns Images`() {
-        // Given
-        val containerId = 1
-        val id = 1
-        val name = "Image"
-        val url = "https://images.google.com"
-        val mockEngine: MockEngine = getMockEngine(
-            ByteReadChannel(
-                """{"images": [{
-                    "containerId": $containerId,
-                    "id": $id,
-                    "name": "$name",
-                    "url": "$url"
-                }]}""".trimIndent()
-            )
-        )
-        val client: HttpClient = httpClient(mockEngine, json())
-        val expected = Images(
-            images = listOf(Image(containerId = containerId, id = id, name = name, url = url))
-        )
-
-        // When
-        val actual: Images = listImages(client, containerId)
-
-        // Then
-        assertEquals(expected, actual, "Images should equal expected")
-        assertEquals(1, mockEngine.requestHistory.size, "Should make 1 request")
-        mockEngine.requestHistory.forEach {
-            assertNotNull(it.url.parameters["containerId"], "Query parameters should contain containerId")
         }
     }
 
@@ -308,7 +173,7 @@ internal class RepositoryTest {
                 }]}""".trimIndent()
             )
         )
-        val client: HttpClient = httpClient(mockEngine, json())
+        val underTest = VideoRepository(httpClient(mockEngine, json()))
         val expected = Videos(
             videos = listOf(
                 Video(
@@ -324,7 +189,7 @@ internal class RepositoryTest {
         )
 
         // When
-        val actual: Videos = listVideos(client)
+        val actual: Videos = underTest.listVideos()
 
         // Then
         assertEquals(expected, actual, "Advertisements should equal expected")
@@ -354,7 +219,7 @@ internal class RepositoryTest {
                 }]}""".trimIndent()
             )
         )
-        val client: HttpClient = httpClient(mockEngine, json())
+        val underTest = VideoRepository(httpClient(mockEngine, json()))
         val expected = Videos(
             videos = listOf(
                 Video(
@@ -370,7 +235,7 @@ internal class RepositoryTest {
         )
 
         // When
-        val actual: Videos = listVideos(client, containerId)
+        val actual: Videos = underTest.listVideos(containerId)
 
         // Then
         assertEquals(expected, actual, "Advertisements should equal expected")
@@ -403,7 +268,7 @@ internal class RepositoryTest {
                 }]}""".trimIndent()
             )
         )
-        val client: HttpClient = httpClient(mockEngine, json())
+        val underTest = VideoRepository(httpClient(mockEngine, json()))
         val expected = Videos(
             videos = listOf(
                 Video(
@@ -419,7 +284,7 @@ internal class RepositoryTest {
         )
 
         // When
-        val actual: Videos = listVideos(client, type)
+        val actual: Videos = underTest.listVideos(type)
 
         // Then
         assertEquals(expected, actual, "Advertisements should equal expected")
@@ -452,7 +317,7 @@ internal class RepositoryTest {
                 }]}""".trimIndent()
             )
         )
-        val client: HttpClient = httpClient(mockEngine, json())
+        val underTest = VideoRepository(httpClient(mockEngine, json()))
         val expected = Videos(
             videos = listOf(
                 Video(
@@ -468,7 +333,7 @@ internal class RepositoryTest {
         )
 
         // When
-        val actual: Videos = listVideos(client, containerId, type)
+        val actual: Videos = underTest.listVideos(containerId, type)
 
         // Then
         assertEquals(expected, actual, "Advertisements should equal expected")

@@ -2,7 +2,6 @@ package com.bottlerocket.repository
 
 import com.bottlerocket.data.AssetType
 import com.bottlerocket.data.VideoType
-import com.bottlerocket.data.advertisementService.Advertisements
 import com.bottlerocket.data.imageService.Images
 import com.bottlerocket.data.videoService.Video
 import com.bottlerocket.data.videoService.VideoAssets
@@ -14,6 +13,7 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -22,7 +22,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @Tag("integration")
-internal class RepositoryIntegrationTest {
+internal class VideoRepositoryIntegrationTest {
     private val client = HttpClient(CIO) {
         install(JsonFeature) {
             serializer = KotlinxSerializer(Json {
@@ -32,13 +32,20 @@ internal class RepositoryIntegrationTest {
         }
     }
 
+    private lateinit var underTest: VideoRepository
+
+    @BeforeEach
+    fun setup() {
+        underTest = VideoRepository(client)
+    }
+
     @Test
     fun `GIVEN videoId WHEN getVideo THEN returns video`() {
         // Given
         val videoId = 1301
 
         // When
-        val actual: Video = getVideo(client, videoId)
+        val actual: Video = underTest.getVideo(videoId)
 
         // Then
         assertNotNull(actual, "Response should not be null")
@@ -52,44 +59,8 @@ internal class RepositoryIntegrationTest {
 
         // When
         assertThrows<ServerResponseException>("Should throw ServerResponseException on invalid request") {
-            getVideo(client, videoId)
+            underTest.getVideo(videoId)
         }
-    }
-
-    @Test
-    fun `GIVEN client WHEN listAdvertisements THEN returns advertisements`() {
-        // When
-        val actual: Advertisements = listAdvertisements(client)
-
-        // Then
-        assertNotNull(actual, "Response should not be null")
-        assertFalse("Response should not be empty") { actual.advertisements.isEmpty() }
-    }
-
-    @Test
-    fun `GIVEN containerId WHEN listAdvertisements THEN returns advertisements`() {
-        // Given
-        val containerId = 27
-
-        // When
-        val actual: Advertisements = listAdvertisements(client, containerId)
-
-        // Then
-        assertNotNull(actual, "Response should not be null")
-        assertFalse("Response should not be empty") { actual.advertisements.isEmpty() }
-    }
-
-    @Test
-    fun `GIVEN invalid containerId WHEN listAdvertisements THEN returns empty advertisements`() {
-        // Given
-        val containerId = 31
-
-        // When
-        val actual: Advertisements = listAdvertisements(client, containerId)
-
-        // Then
-        assertNotNull(actual, "Response should not be null")
-        assertTrue("Response should be empty") { actual.advertisements.isEmpty() }
     }
 
     @Test
@@ -98,7 +69,7 @@ internal class RepositoryIntegrationTest {
         val videoId = 1404
 
         // When
-        val actual: VideoAssets = listAssetReferences(client, videoId)
+        val actual: VideoAssets = underTest.listAssetReferences(videoId)
 
         // Then
         assertNotNull(actual, "Response should not be null")
@@ -111,7 +82,7 @@ internal class RepositoryIntegrationTest {
         val videoId = 0
 
         // When
-        val actual: VideoAssets = listAssetReferences(client, videoId)
+        val actual: VideoAssets = underTest.listAssetReferences(videoId)
 
         // Then
         assertNotNull(actual, "Response should not be null")
@@ -125,7 +96,7 @@ internal class RepositoryIntegrationTest {
         val assetType = AssetType.IMAGE
 
         // When
-        val actual: VideoAssets = listAssetReferences(client, videoId, assetType)
+        val actual: VideoAssets = underTest.listAssetReferences(videoId, assetType)
 
         // Then
         assertNotNull(actual, "Response should not be null")
@@ -139,7 +110,7 @@ internal class RepositoryIntegrationTest {
         val assetType = AssetType.AD
 
         // When
-        val actual: VideoAssets = listAssetReferences(client, videoId, assetType)
+        val actual: VideoAssets = underTest.listAssetReferences(videoId, assetType)
 
         // Then
         assertNotNull(actual, "Response should not be null")
@@ -147,45 +118,9 @@ internal class RepositoryIntegrationTest {
     }
 
     @Test
-    fun `GIVEN client WHEN listImages THEN returns images`() {
-        // When
-        val actual: Images = listImages(client)
-
-        // Then
-        assertNotNull(actual, "Response should not be null")
-        assertFalse("Response should not be empty") { actual.images.isEmpty() }
-    }
-
-    @Test
-    fun `GIVEN containerId WHEN listImages THEN returns images`() {
-        // Given
-        val containerId = 17
-
-        // When
-        val actual: Images = listImages(client, containerId)
-
-        // Then
-        assertNotNull(actual, "Response should not be null")
-        assertFalse("Response should not be empty") { actual.images.isEmpty() }
-    }
-
-    @Test
-    fun `GIVEN invalid containerId WHEN listImages THEN returns empty images`() {
-        // Given
-        val containerId = 31
-
-        // When
-        val actual: Images = listImages(client, containerId)
-
-        // Then
-        assertNotNull(actual, "Response should not be null")
-        assertTrue("Response should be empty") { actual.images.isEmpty() }
-    }
-
-    @Test
     fun `GIVEN client WHEN listVideos THEN returns videos`() {
         // When
-        val actual: Videos = listVideos(client)
+        val actual: Videos = underTest.listVideos()
 
         // Then
         assertNotNull(actual, "Response should not be null")
@@ -198,7 +133,7 @@ internal class RepositoryIntegrationTest {
         val containerId = 17
 
         // When
-        val actual: Videos = listVideos(client, containerId)
+        val actual: Videos = underTest.listVideos(containerId)
 
         // Then
         assertNotNull(actual, "Response should not be null")
@@ -211,7 +146,7 @@ internal class RepositoryIntegrationTest {
         val containerId = 31
 
         // When
-        val actual: Videos = listVideos(client, containerId)
+        val actual: Videos = underTest.listVideos(containerId)
 
         // Then
         assertNotNull(actual, "Response should not be null")
@@ -224,7 +159,7 @@ internal class RepositoryIntegrationTest {
         val type = VideoType.CLIP
 
         // When
-        val actual: Videos = listVideos(client, type)
+        val actual: Videos = underTest.listVideos(type)
 
         // Then
         assertNotNull(actual, "Response should not be null")
@@ -238,7 +173,7 @@ internal class RepositoryIntegrationTest {
         val type = VideoType.CLIP
 
         // When
-        val actual: Videos = listVideos(client, containerId, type)
+        val actual: Videos = underTest.listVideos(containerId, type)
 
         // Then
         assertNotNull(actual, "Response should not be null")
@@ -252,7 +187,7 @@ internal class RepositoryIntegrationTest {
         val type = VideoType.CLIP
 
         // When
-        val actual: Videos = listVideos(client, containerId, type)
+        val actual: Videos = underTest.listVideos(containerId, type)
 
         // Then
         assertNotNull(actual, "Response should not be null")

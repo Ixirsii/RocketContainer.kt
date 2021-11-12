@@ -7,52 +7,61 @@ import com.bottlerocket.data.containerService.Container
 import com.bottlerocket.data.containerService.Image
 import com.bottlerocket.data.containerService.Video
 import com.bottlerocket.data.imageService.Images
-import com.bottlerocket.repository.listAdvertisements
-import com.bottlerocket.repository.listAssetReferences
-import com.bottlerocket.repository.listImages
-import com.bottlerocket.repository.listVideos
-import io.ktor.client.HttpClient
-
-/** TODO: Refactor service & repository layers to be more easily testable.
- * Get a list of all containers.
- *
- * @param client Http client.
- * @return all containers.
- */
-fun listContainers(client: HttpClient): List<Container> {
-    val advertisements: Advertisements = listAdvertisements(client)
-    val images: Images = listImages(client)
-    val videos: Map<Int, List<Video>> = getVideos(client)
-
-    return videos.map { entry ->
-        val ads: List<Advertisement> = advertisements.advertisements
-            .filter { it.containerId == entry.key }
-            .map { convertAdvertisement(it) }
-        val containerImages: List<Image> = images.images
-            .filter { it.containerId == entry.key }
-            .map { convertImage(it) }
-
-        convertContainer(entry.key, ads, containerImages, entry.value)
-    }
-}
+import com.bottlerocket.repository.AdvertisementRepository
+import com.bottlerocket.repository.ImageRepository
+import com.bottlerocket.repository.VideoRepository
 
 /**
- * Get a map of container ID to a list of videos in that container.
- *
- * @param client Http client.
- * @return map of container ID to a list of videos.
+ * Container service.
  */
-private fun getVideos(client: HttpClient): Map<Int, List<Video>> {
-    val videos: MutableMap<Int, MutableList<Video>> = HashMap()
+class Service(
+    private val advertisementRepository: AdvertisementRepository,
+    private val imageRepository: ImageRepository,
+    private val videoRepository: VideoRepository
+) {
+    /**
+     * Get a list of all containers.
+     *
+     * @return all containers.
+     */
+    fun listContainers(): List<Container> {
+        val advertisements: Advertisements = advertisementRepository.listAdvertisements()
+        val images: Images = imageRepository.listImages()
+        val videos: Map<Int, List<Video>> = getVideos()
 
-    for (video in listVideos(client).videos) {
-        val assets: List<AssetReference> = listAssetReferences(client, video.id).videoAssets
-            .map { convertAssetReference(it) }
+        return videos.map { entry ->
+            val ads: List<Advertisement> = advertisements.advertisements
+                .filter { it.containerId == entry.key }
+                .map { convertAdvertisement(it) }
+            val containerImages: List<Image> = images.images
+                .filter { it.containerId == entry.key }
+                .map { convertImage(it) }
 
-        if (videos[video.containerId]?.add(convertVideo(video, assets)) != true) {
-            videos[video.containerId] = mutableListOf(convertVideo(video, assets))
+            convertContainer(entry.key, ads, containerImages, entry.value)
         }
     }
 
-    return videos
+    /* ********************************************************************************************************** *
+     *                                             Private utility functions                                      *
+     * ********************************************************************************************************** */
+
+    /**
+     * Get a map of container ID to a list of videos in that container.
+     *
+     * @return map of container ID to a list of videos.
+     */
+    private fun getVideos(): Map<Int, List<Video>> {
+        val videos: MutableMap<Int, MutableList<Video>> = HashMap()
+
+        for (video in videoRepository.listVideos().videos) {
+            val assets: List<AssetReference> = videoRepository.listAssetReferences(video.id).videoAssets
+                .map { convertAssetReference(it) }
+
+            if (videos[video.containerId]?.add(convertVideo(video, assets)) != true) {
+                videos[video.containerId] = mutableListOf(convertVideo(video, assets))
+            }
+        }
+
+        return videos
+    }
 }
