@@ -1,13 +1,21 @@
 package com.bottlerocket.repository
 
-import com.bottlerocket.data.AssetType
-import com.bottlerocket.data.VideoType
-import com.bottlerocket.data.videoService.AssetReference
 import com.bottlerocket.data.videoService.Video
 import com.bottlerocket.data.videoService.VideoAssets
 import com.bottlerocket.data.videoService.Videos
 import com.bottlerocket.module.httpClient
 import com.bottlerocket.module.json
+import com.bottlerocket.util.CONTAINER_ID
+import com.bottlerocket.util.DESCRIPTION
+import com.bottlerocket.util.EXPIRATION_DATE
+import com.bottlerocket.util.ID
+import com.bottlerocket.util.TITLE
+import com.bottlerocket.util.VIDEO_URL
+import com.bottlerocket.util.assetType
+import com.bottlerocket.util.video
+import com.bottlerocket.util.videoAssets
+import com.bottlerocket.util.videoType
+import com.bottlerocket.util.videos
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.features.ServerResponseException
@@ -27,46 +35,29 @@ internal class VideoRepositoryTest {
     @Test
     fun `GIVEN videoId WHEN getVideo THEN returns Video`() {
         // Given
-        val containerId = 1
-        val description = "Video description"
-        val expirationDate = "1970-01-01"
-        val id = 1
-        val playbackUrl = "https://youtube.com/"
-        val title = "Test video"
-        val type = VideoType.CLIP
         val mockEngine = getMockEngine(
             ByteReadChannel(
                 """{
-                    "containerId": $containerId,
-                    "description": "$description",
-                    "expirationDate": "$expirationDate",
-                    "id": $id,
-                    "playbackUrl": "$playbackUrl",
-                    "title": "$title",
-                    "type": "$type"
+                    "containerId": $CONTAINER_ID,
+                    "description": "$DESCRIPTION",
+                    "expirationDate": "$EXPIRATION_DATE",
+                    "id": $ID,
+                    "playbackUrl": "$VIDEO_URL",
+                    "title": "$TITLE",
+                    "type": "$videoType"
                 }""".trimMargin()
             )
         )
         val underTest = VideoRepository(httpClient(mockEngine, json()))
-        val videoId = 1301
-        val expected = Video(
-            containerId = containerId,
-            description = description,
-            expirationDate = expirationDate,
-            id = id,
-            playbackUrl = playbackUrl,
-            title = title,
-            type = type
-        )
 
         // When
-        val actual: Video = underTest.getVideo(videoId)
+        val actual: Video = underTest.getVideo(ID)
 
         // Then
-        assertEquals(expected, actual, "Video should equal expected")
+        assertEquals(video, actual, "Video should equal expected")
         assertEquals(1, mockEngine.requestHistory.size, "Should make 1 requests")
         mockEngine.requestHistory.forEach {
-            assertTrue("URL should contain video ID") { it.url.toString().endsWith(videoId.toString()) }
+            assertTrue("URL should contain video ID") { it.url.toString().endsWith(ID.toString()) }
         }
     }
 
@@ -75,170 +66,117 @@ internal class VideoRepositoryTest {
         // Given
         val mockEngine: MockEngine = getMockEngine()
         val underTest = VideoRepository(httpClient(mockEngine, json()))
-        val videoId = 0
 
         // When
-        assertThrows<ServerResponseException> { underTest.getVideo(videoId) }
+        assertThrows<ServerResponseException> { underTest.getVideo(ID) }
 
         // Then
         assertEquals(3, mockEngine.requestHistory.size, "Should make 3 requests")
         mockEngine.requestHistory.forEach {
-            assertTrue("URL should contain video ID") { it.url.toString().endsWith(videoId.toString()) }
+            assertTrue("URL should contain video ID") { it.url.toString().endsWith(ID.toString()) }
         }
     }
 
     @Test
-    fun `GIVEN video ID WHEN listAssetReferences THEN returns Advertisements`() {
+    fun `GIVEN video ID WHEN listAssetReferences THEN returns VideoAssets`() {
         // Given
-        val assetId = 1
-        val assetType = AssetType.IMAGE
-        val videoId = 1
         val mockEngine: MockEngine = getMockEngine(
             ByteReadChannel(
                 """{"videoAssets": [{
-                    "assetId": $assetId,
+                    "assetId": $ID,
                     "assetType": "$assetType",
-                    "videoId": "$videoId"
+                    "videoId": "$ID"
                 }]}""".trimIndent()
             )
         )
         val underTest = VideoRepository(httpClient(mockEngine, json()))
-        val expected = VideoAssets(
-            videoAssets = listOf(AssetReference(assetId = assetId, assetType = assetType, videoId = videoId))
-        )
 
         // When
-        val actual: VideoAssets = underTest.listAssetReferences(videoId)
+        val actual: VideoAssets = underTest.listAssetReferences(ID)
 
         // Then
-        assertEquals(expected, actual, "VideoAssets should equal expected")
+        assertEquals(videoAssets, actual, "VideoAssets should equal expected")
         assertEquals(1, mockEngine.requestHistory.size, "Should make 1 request")
         mockEngine.requestHistory.forEach {
-            assertTrue("URL should contain video ID") { it.url.toString().contains(videoId.toString()) }
+            assertTrue("URL should contain video ID") { it.url.toString().contains(ID.toString()) }
         }
     }
 
     @Test
-    fun `GIVEN assetType ID WHEN listAssetReferences THEN returns Advertisements`() {
+    fun `GIVEN assetType ID WHEN listAssetReferences THEN returns VideoAssets`() {
         // Given
-        val assetId = 1
-        val assetType = AssetType.IMAGE
-        val videoId = 1
         val mockEngine: MockEngine = getMockEngine(
             ByteReadChannel(
                 """{"videoAssets": [{
-                    "assetId": $assetId,
+                    "assetId": $ID,
                     "assetType": "$assetType",
-                    "videoId": "$videoId"
+                    "videoId": "$ID"
                 }]}""".trimIndent()
             )
         )
         val underTest = VideoRepository(httpClient(mockEngine, json()))
-        val expected = VideoAssets(
-            videoAssets = listOf(AssetReference(assetId = assetId, assetType = assetType, videoId = videoId))
-        )
 
         // When
-        val actual: VideoAssets = underTest.listAssetReferences(videoId, assetType)
+        val actual: VideoAssets = underTest.listAssetReferences(ID, assetType)
 
         // Then
-        assertEquals(expected, actual, "VideoAssets should equal expected")
+        assertEquals(videoAssets, actual, "VideoAssets should equal expected")
         assertEquals(1, mockEngine.requestHistory.size, "Should make 1 request")
         mockEngine.requestHistory.forEach {
-            assertTrue("URL should contain video ID") { it.url.toString().contains(videoId.toString()) }
+            assertTrue("URL should contain video ID") { it.url.toString().contains(ID.toString()) }
             assertNotNull(it.url.parameters["assetType"], "Query parameters should contain assetType")
         }
     }
 
     @Test
-    fun `GIVEN httpClient WHEN listVideos THEN returns Images`() {
+    fun `GIVEN httpClient WHEN listVideos THEN returns Videos`() {
         // Given
-        val containerId = 1
-        val description = "Video description"
-        val expirationDate = "1970-01-01"
-        val id = 1
-        val playbackUrl = "https://youtube.com/"
-        val title = "Test video"
-        val type = VideoType.CLIP
         val mockEngine: MockEngine = getMockEngine(
             ByteReadChannel(
                 """{"videos": [{
-                    "containerId": $containerId,
-                    "description": "$description",
-                    "expirationDate": "$expirationDate",
-                    "id": $id,
-                    "playbackUrl": "$playbackUrl",
-                    "title": "$title",
-                    "type": "$type"
+                    "containerId": $CONTAINER_ID,
+                    "description": "$DESCRIPTION",
+                    "expirationDate": "$EXPIRATION_DATE",
+                    "id": $ID,
+                    "playbackUrl": "$VIDEO_URL",
+                    "title": "$TITLE",
+                    "type": "$videoType"
                 }]}""".trimIndent()
             )
         )
         val underTest = VideoRepository(httpClient(mockEngine, json()))
-        val expected = Videos(
-            videos = listOf(
-                Video(
-                    containerId = containerId,
-                    description = description,
-                    expirationDate = expirationDate,
-                    id = id,
-                    playbackUrl = playbackUrl,
-                    title = title,
-                    type = type,
-                )
-            )
-        )
 
         // When
         val actual: Videos = underTest.listVideos()
 
         // Then
-        assertEquals(expected, actual, "Advertisements should equal expected")
+        assertEquals(videos, actual, "Advertisements should equal expected")
         assertEquals(1, mockEngine.requestHistory.size, "Should make 1 request")
     }
 
     @Test
-    fun `GIVEN containerId WHEN listVideos THEN returns Images`() {
+    fun `GIVEN containerId WHEN listVideos THEN returns Videos`() {
         // Given
-        val containerId = 1
-        val description = "Video description"
-        val expirationDate = "1970-01-01"
-        val id = 1
-        val playbackUrl = "https://youtube.com/"
-        val title = "Test video"
-        val type = VideoType.CLIP
         val mockEngine: MockEngine = getMockEngine(
             ByteReadChannel(
                 """{"videos": [{
-                    "containerId": $containerId,
-                    "description": "$description",
-                    "expirationDate": "$expirationDate",
-                    "id": $id,
-                    "playbackUrl": "$playbackUrl",
-                    "title": "$title",
-                    "type": "$type"
+                    "containerId": $CONTAINER_ID,
+                    "description": "$DESCRIPTION",
+                    "expirationDate": "$EXPIRATION_DATE",
+                    "id": $ID,
+                    "playbackUrl": "$VIDEO_URL",
+                    "title": "$TITLE",
+                    "type": "$videoType"
                 }]}""".trimIndent()
             )
         )
         val underTest = VideoRepository(httpClient(mockEngine, json()))
-        val expected = Videos(
-            videos = listOf(
-                Video(
-                    containerId = containerId,
-                    description = description,
-                    expirationDate = expirationDate,
-                    id = id,
-                    playbackUrl = playbackUrl,
-                    title = title,
-                    type = type,
-                )
-            )
-        )
 
         // When
-        val actual: Videos = underTest.listVideos(containerId)
+        val actual: Videos = underTest.listVideos(CONTAINER_ID)
 
         // Then
-        assertEquals(expected, actual, "Advertisements should equal expected")
+        assertEquals(videos, actual, "Advertisements should equal expected")
         assertEquals(1, mockEngine.requestHistory.size, "Should make 1 request")
         mockEngine.requestHistory.forEach {
             assertNotNull(it.url.parameters["containerId"], "Query parameters should contain containerId")
@@ -246,48 +184,28 @@ internal class VideoRepositoryTest {
     }
 
     @Test
-    fun `GIVEN type WHEN listVideos THEN returns Images`() {
+    fun `GIVEN type WHEN listVideos THEN returns Videos`() {
         // Given
-        val containerId = 1
-        val description = "Video description"
-        val expirationDate = "1970-01-01"
-        val id = 1
-        val playbackUrl = "https://youtube.com/"
-        val title = "Test video"
-        val type = VideoType.CLIP
         val mockEngine: MockEngine = getMockEngine(
             ByteReadChannel(
                 """{"videos": [{
-                    "containerId": $containerId,
-                    "description": "$description",
-                    "expirationDate": "$expirationDate",
-                    "id": $id,
-                    "playbackUrl": "$playbackUrl",
-                    "title": "$title",
-                    "type": "$type"
+                    "containerId": $CONTAINER_ID,
+                    "description": "$DESCRIPTION",
+                    "expirationDate": "$EXPIRATION_DATE",
+                    "id": $ID,
+                    "playbackUrl": "$VIDEO_URL",
+                    "title": "$TITLE",
+                    "type": "$videoType"
                 }]}""".trimIndent()
             )
         )
         val underTest = VideoRepository(httpClient(mockEngine, json()))
-        val expected = Videos(
-            videos = listOf(
-                Video(
-                    containerId = containerId,
-                    description = description,
-                    expirationDate = expirationDate,
-                    id = id,
-                    playbackUrl = playbackUrl,
-                    title = title,
-                    type = type,
-                )
-            )
-        )
 
         // When
-        val actual: Videos = underTest.listVideos(type)
+        val actual: Videos = underTest.listVideos(videoType)
 
         // Then
-        assertEquals(expected, actual, "Advertisements should equal expected")
+        assertEquals(videos, actual, "Advertisements should equal expected")
         assertEquals(1, mockEngine.requestHistory.size, "Should make 1 request")
         mockEngine.requestHistory.forEach {
             assertNotNull(it.url.parameters["type"], "Query parameters should contain type")
@@ -295,48 +213,28 @@ internal class VideoRepositoryTest {
     }
 
     @Test
-    fun `GIVEN containerId and type WHEN listVideos THEN returns Images`() {
+    fun `GIVEN containerId and type WHEN listVideos THEN returns Videos`() {
         // Given
-        val containerId = 1
-        val description = "Video description"
-        val expirationDate = "1970-01-01"
-        val id = 1
-        val playbackUrl = "https://youtube.com/"
-        val title = "Test video"
-        val type = VideoType.CLIP
         val mockEngine: MockEngine = getMockEngine(
             ByteReadChannel(
                 """{"videos": [{
-                    "containerId": $containerId,
-                    "description": "$description",
-                    "expirationDate": "$expirationDate",
-                    "id": $id,
-                    "playbackUrl": "$playbackUrl",
-                    "title": "$title",
-                    "type": "$type"
+                    "containerId": $CONTAINER_ID,
+                    "description": "$DESCRIPTION",
+                    "expirationDate": "$EXPIRATION_DATE",
+                    "id": $ID,
+                    "playbackUrl": "$VIDEO_URL",
+                    "title": "$TITLE",
+                    "type": "$videoType"
                 }]}""".trimIndent()
             )
         )
         val underTest = VideoRepository(httpClient(mockEngine, json()))
-        val expected = Videos(
-            videos = listOf(
-                Video(
-                    containerId = containerId,
-                    description = description,
-                    expirationDate = expirationDate,
-                    id = id,
-                    playbackUrl = playbackUrl,
-                    title = title,
-                    type = type,
-                )
-            )
-        )
 
         // When
-        val actual: Videos = underTest.listVideos(containerId, type)
+        val actual: Videos = underTest.listVideos(CONTAINER_ID, videoType)
 
         // Then
-        assertEquals(expected, actual, "Advertisements should equal expected")
+        assertEquals(videos, actual, "Advertisements should equal expected")
         assertEquals(1, mockEngine.requestHistory.size, "Should make 1 request")
         mockEngine.requestHistory.forEach {
             assertNotNull(it.url.parameters["containerId"], "Query parameters should contain containerId")

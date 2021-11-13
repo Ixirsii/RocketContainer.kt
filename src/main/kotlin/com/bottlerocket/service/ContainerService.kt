@@ -14,7 +14,7 @@ import com.bottlerocket.repository.VideoRepository
 /**
  * Container service.
  */
-class Service(
+class ContainerService(
     private val advertisementRepository: AdvertisementRepository,
     private val imageRepository: ImageRepository,
     private val videoRepository: VideoRepository
@@ -39,6 +39,27 @@ class Service(
 
             convertContainer(entry.key, ads, containerImages, entry.value)
         }
+    }
+
+    /**
+     * Get a container by ID.
+     *
+     * @param containerId Container ID.
+     * @return container by ID.
+     */
+    fun getContainer(containerId: Int): Container {
+        val advertisements: List<Advertisement> = advertisementRepository.listAdvertisements(containerId).advertisements
+            .map { convertAdvertisement(it) }
+        val images: List<Image> = imageRepository.listImages(containerId).images
+            .map { convertImage(it) }
+        val videos: List<Video> = videoRepository.listVideos(containerId).videos
+            .map { video ->
+                val assets: List<AssetReference> = videoRepository.listAssetReferences(video.id).videoAssets
+                    .map { convertAssetReference(it) }
+                convertVideo(video, assets)
+            }
+
+        return convertContainer(containerId, advertisements, images, videos)
     }
 
     /* ********************************************************************************************************** *

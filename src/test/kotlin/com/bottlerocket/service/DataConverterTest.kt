@@ -1,48 +1,30 @@
 package com.bottlerocket.service
 
-import com.bottlerocket.data.AssetType
-import com.bottlerocket.data.VideoType
 import com.bottlerocket.data.containerService.Advertisement
 import com.bottlerocket.data.containerService.AssetReference
 import com.bottlerocket.data.containerService.Container
 import com.bottlerocket.data.containerService.Image
 import com.bottlerocket.data.containerService.Video
+import com.bottlerocket.util.ID
+import com.bottlerocket.util.adsContainer
+import com.bottlerocket.util.advertisement
+import com.bottlerocket.util.assetReference
+import com.bottlerocket.util.containerAdvertisement
+import com.bottlerocket.util.containerAsset
+import com.bottlerocket.util.containerImage
+import com.bottlerocket.util.containerVideo
+import com.bottlerocket.util.emptyContainer
+import com.bottlerocket.util.fullContainer
+import com.bottlerocket.util.image
+import com.bottlerocket.util.imagesContainer
+import com.bottlerocket.util.video
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 internal class DataConverterTest {
-    private val assets: List<AssetReference> = emptyList()
-    private val containerAdvertisement = Advertisement(
-        id = 1,
-        name = "Advertisement",
-        url = "URL"
-    )
-    private val containerAsset = AssetReference(assetId = 1, assetType = AssetType.AD)
-    private val containerImage = Image(
-        id = 1,
-        name = "Image",
-        url = "Url"
-    )
-    private val containerVideo = Video(
-        assets = assets,
-        description = "Description",
-        expirationDate = "1970-01-01",
-        id = 1,
-        playbackUrl = "Playback Url",
-        title = "Title",
-        type = VideoType.MOVIE
-    )
 
     @Test
     fun `GIVEN advertisement WHEN convertAdvertisement THEN converts data`() {
-        // Given
-        val advertisement = com.bottlerocket.data.advertisementService.Advertisement(
-            containerId = 1,
-            id = containerAdvertisement.id,
-            name = containerAdvertisement.name,
-            url = containerAdvertisement.url
-        )
-
         // When
         val actual: Advertisement = convertAdvertisement(advertisement)
 
@@ -52,13 +34,6 @@ internal class DataConverterTest {
 
     @Test
     fun `GIVEN asset WHEN convertAssetReference THEN converts data`() {
-        // Given
-        val assetReference = com.bottlerocket.data.videoService.AssetReference(
-            assetId = containerAsset.assetId,
-            assetType = containerAsset.assetType,
-            videoId = 1
-        )
-
         // When
         val actual: AssetReference = convertAssetReference(assetReference)
 
@@ -67,59 +42,55 @@ internal class DataConverterTest {
     }
 
     @Test
-    fun `GIVEN ads and images WHEN convertContainer THEN converts data`() {
-        // Given
-        val ads: List<Advertisement> = listOf(containerAdvertisement)
-        val id = 1
-        val images: List<Image> = listOf(containerImage)
-        val videos: List<Video> = listOf(containerVideo)
-        val container = Container(
-            ads = ads,
-            id = id,
-            images = images,
-            title = "container-1_ads_images_videos",
-            videos = videos
-        )
-
+    fun `GIVEN ads WHEN convertContainer THEN converts data`() {
         // When
-        val actual: Container = convertContainer(id, ads, images, videos)
+        val actual: Container = convertContainer(
+            id = ID,
+            ads = listOf(containerAdvertisement),
+            images = emptyList(),
+            videos = listOf(containerVideo))
 
         // Then
-        assertEquals(container, actual, "Converted container should equal expected")
+        assertEquals(adsContainer, actual, "Converted container should equal expected")
+    }
+
+    @Test
+    fun `GIVEN images WHEN convertContainer THEN converts data`() {
+        // When
+        val actual: Container = convertContainer(
+            id = ID,
+            ads = emptyList(),
+            images = listOf(containerImage),
+            videos = listOf(containerVideo))
+
+        // Then
+        assertEquals(imagesContainer, actual, "Converted container should equal expected")
+    }
+
+    @Test
+    fun `GIVEN ads and images WHEN convertContainer THEN converts data`() {
+        // When
+        val actual: Container = convertContainer(
+            id = ID,
+            ads = listOf(containerAdvertisement),
+            images = listOf(containerImage),
+            videos = listOf(containerVideo))
+
+        // Then
+        assertEquals(fullContainer, actual, "Converted container should equal expected")
     }
 
     @Test
     fun `GIVEN videos WHEN convertContainer THEN converts data`() {
-        // Given
-        val ads: List<Advertisement> = emptyList()
-        val id = 1
-        val images: List<Image> = emptyList()
-        val videos: List<Video> = listOf(containerVideo)
-        val container = Container(
-            ads = ads,
-            id = id,
-            images = images,
-            title = "container-1_videos",
-            videos = videos
-        )
-
         // When
-        val actual: Container = convertContainer(id, ads, images, videos)
+        val actual: Container = convertContainer(ID, emptyList(), emptyList(), listOf(containerVideo))
 
         // Then
-        assertEquals(container, actual, "Converted container should equal expected")
+        assertEquals(emptyContainer, actual, "Converted container should equal expected")
     }
 
     @Test
     fun `GIVEN image WHEN convertImage THEN converts data`() {
-        // Given
-        val image = com.bottlerocket.data.imageService.Image(
-            containerId = 1,
-            id = containerImage.id,
-            name = containerImage.name,
-            url = containerImage.url
-        )
-
         // When
         val actual: Image = convertImage(image)
 
@@ -129,19 +100,8 @@ internal class DataConverterTest {
 
     @Test
     fun `GIVEN video WHEN convertVideo THEN converts data`() {
-        // Given
-        val video = com.bottlerocket.data.videoService.Video(
-            containerId = 1,
-            description = containerVideo.description,
-            expirationDate = containerVideo.expirationDate,
-            id = containerVideo.id,
-            playbackUrl = containerVideo.playbackUrl,
-            title = containerVideo.title,
-            type = containerVideo.type
-        )
-
         // When
-        val actual: Video = convertVideo(video, assets)
+        val actual: Video = convertVideo(video, listOf(containerAsset))
 
         // Then
         assertEquals(containerVideo, actual, "Converted video should equal expected")
