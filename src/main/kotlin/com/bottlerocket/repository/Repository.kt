@@ -2,7 +2,9 @@ package com.bottlerocket.repository
 
 import com.bottlerocket.Logging
 import io.ktor.client.HttpClient
-import io.ktor.client.features.ResponseException
+import io.ktor.client.features.ClientRequestException
+import io.ktor.client.features.RedirectResponseException
+import io.ktor.client.features.ServerResponseException
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import kotlinx.coroutines.delay
@@ -20,8 +22,11 @@ abstract class Repository(val client: HttpClient) : Logging {
      * @param url Request URL.
      * @param block [HttpRequestBuilder] used to configure the request.
      * @return deserialized data from endpoint.
-     * @throws ResponseException if the maximum number of attempts is exceeded.
+     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
+     * @throws ClientRequestException if a 4xx response is returned.
+     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
      */
+    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     suspend inline fun <reified T> exponentialBackoffAndRetry(
         url: String,
         block: HttpRequestBuilder.() -> Unit = {}
@@ -32,9 +37,13 @@ abstract class Repository(val client: HttpClient) : Logging {
         for (i in (1 until maxAttempts)) {
             try {
                 return client.get(url, block)
-            } catch (e: ResponseException) {
+            } catch (e: RedirectResponseException) {
                 val backoff: Long = exponentialBackoff(i)
-                log.trace("Caught ResponseException calling {} on attempt {}. Waiting {}ms", url, i, backoff, e)
+                log.warn("Caught RedirectResponseException calling {} on attempt {}. Waiting {}ms", url, i, backoff, e)
+                delay(backoff)
+            } catch (e: ServerResponseException) {
+                val backoff: Long = exponentialBackoff(i)
+                log.warn("Caught RedirectResponseException calling {} on attempt {}. Waiting {}ms", url, i, backoff, e)
                 delay(backoff)
             }
         }
