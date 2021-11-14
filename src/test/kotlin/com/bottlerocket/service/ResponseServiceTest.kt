@@ -2,6 +2,7 @@ package com.bottlerocket.service
 
 import com.bottlerocket.module.httpClient
 import com.bottlerocket.util.ID
+import com.bottlerocket.util.containerAdvertisement
 import com.bottlerocket.util.fullContainer
 import io.ktor.application.ApplicationCall
 import io.ktor.client.HttpClient
@@ -44,6 +45,22 @@ internal class ResponseServiceTest {
 
     init {
         mockkStatic("io.ktor.response.ApplicationResponseFunctionsKt")
+    }
+
+    @Test
+    fun `GIVEN success WHEN getAdvertisements THEN responds containers`() {
+        // Given
+        every { containerService.getAdvertisements(any()) } returns listOf(containerAdvertisement)
+        coJustRun { call.respond(any()) }
+
+        // When
+        runBlocking { underTest.getAdvertisements(ID, call) }
+
+        // Then
+        verify(exactly = 1) {
+            containerService.getAdvertisements(any())
+        }
+        confirmVerified(containerService)
     }
 
     @Test

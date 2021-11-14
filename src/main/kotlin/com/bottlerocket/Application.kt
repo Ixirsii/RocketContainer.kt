@@ -53,6 +53,7 @@ fun Route.containerRouting() {
                     status = HttpStatusCode.BadRequest
                 )
 
+                responseService.getAdvertisements(containerId, call)
             }
             get("images") {
                 val containerId: Int = call.parameters["containerId"]?.toInt() ?: return@get call.respondText(

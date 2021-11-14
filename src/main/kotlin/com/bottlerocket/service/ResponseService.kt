@@ -16,25 +16,24 @@ class ResponseService(
     private val containerService: ContainerService
 ) {
 
+    /**
+     * Respond to GET /containers/{containerId}/ads.
+     *
+     * @param containerId container ID from path.
+     * @param call Application call for getting parameters and responding to the request.
+     */
+    suspend fun getAdvertisements(containerId: Int, call: ApplicationCall) {
+        respond(call) { containerService.getAdvertisements(containerId) }
+    }
+
+    /**
+     * Respond to GET /containers/{containerId}.
+     *
+     * @param containerId container ID from path.
+     * @param call Application call for getting parameters and responding to the request.
+     */
     suspend fun getContainer(containerId: Int, call: ApplicationCall) {
-        try {
-            call.respond(containerService.getContainer(containerId))
-        } catch (e: ClientRequestException) {
-            call.respondText(
-                "Bad request: ${e.message}",
-                status = HttpStatusCode.NotFound
-            )
-        } catch (e: RedirectResponseException) {
-            call.respondText(
-                "Service configured incorrectly. Client returned 3xx: ${e.message}",
-                status = HttpStatusCode.InternalServerError
-            )
-        } catch (e: ServerResponseException) {
-            call.respondText(
-                "Exceeded maximum retries while calling dependent service: ${e.message}",
-                status = HttpStatusCode.NotFound
-            )
-        }
+        respond(call) { containerService.getContainer(containerId) }
     }
 
     /**
@@ -59,6 +58,37 @@ class ResponseService(
             call.respondText(
                 "Exceeded maximum retries while calling dependent service: ${e.message}",
                 status = HttpStatusCode.InternalServerError
+            )
+        }
+    }
+
+    /* ********************************************************************************************************** *
+     *                                             Private utility functions                                      *
+     * ********************************************************************************************************** */
+
+    /**
+     * Try to respond with data but respond with text on dependency failure.
+     *
+     * @param call Application call for getting parameters and responding to the request.
+     * @param block
+     */
+    private suspend fun respond(call: ApplicationCall, block: () -> Any) {
+        try {
+            call.respond(block())
+        } catch (e: ClientRequestException) {
+            call.respondText(
+                "Bad request: ${e.message}",
+                status = HttpStatusCode.NotFound
+            )
+        } catch (e: RedirectResponseException) {
+            call.respondText(
+                "Service configured incorrectly. Client returned 3xx: ${e.message}",
+                status = HttpStatusCode.InternalServerError
+            )
+        } catch (e: ServerResponseException) {
+            call.respondText(
+                "Exceeded maximum retries while calling dependent service: ${e.message}",
+                status = HttpStatusCode.NotFound
             )
         }
     }
