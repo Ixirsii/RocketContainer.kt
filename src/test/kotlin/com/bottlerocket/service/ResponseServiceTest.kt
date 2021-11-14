@@ -3,6 +3,7 @@ package com.bottlerocket.service
 import com.bottlerocket.module.httpClient
 import com.bottlerocket.util.ID
 import com.bottlerocket.util.containerAdvertisement
+import com.bottlerocket.util.containerImage
 import com.bottlerocket.util.fullContainer
 import io.ktor.application.ApplicationCall
 import io.ktor.client.HttpClient
@@ -75,6 +76,22 @@ internal class ResponseServiceTest {
         // Then
         verify(exactly = 1) {
             containerService.getContainer(any())
+        }
+        confirmVerified(containerService)
+    }
+
+    @Test
+    fun `GIVEN success WHEN getImages THEN responds containers`() {
+        // Given
+        every { containerService.getImages(any()) } returns listOf(containerImage)
+        coJustRun { call.respond(any()) }
+
+        // When
+        runBlocking { underTest.getImages(ID, call) }
+
+        // Then
+        verify(exactly = 1) {
+            containerService.getImages(any())
         }
         confirmVerified(containerService)
     }

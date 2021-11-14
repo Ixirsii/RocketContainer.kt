@@ -61,6 +61,7 @@ fun Route.containerRouting() {
                     status = HttpStatusCode.BadRequest
                 )
 
+                responseService.getImages(containerId, call)
             }
             get("videos") {
                 val containerId: Int = call.parameters["containerId"]?.toInt() ?: return@get call.respondText(

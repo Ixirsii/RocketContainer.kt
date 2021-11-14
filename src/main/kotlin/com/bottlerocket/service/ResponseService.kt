@@ -37,6 +37,16 @@ class ResponseService(
     }
 
     /**
+     * Respond to GET /containers/{containerId}/images.
+     *
+     * @param containerId container ID from path.
+     * @param call Application call for getting parameters and responding to the request.
+     */
+    suspend fun getImages(containerId: Int, call: ApplicationCall) {
+        respond(call) { containerService.getImages(containerId) }
+    }
+
+    /**
      * Respond to GET /containers.
      *
      * @param call Application call for getting parameters and responding to the request.
