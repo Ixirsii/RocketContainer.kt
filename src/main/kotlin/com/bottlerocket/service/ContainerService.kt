@@ -50,8 +50,14 @@ class ContainerService(
      * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
      * @throws ClientRequestException if a 4xx response is returned.
      * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
+     * @throws IllegalArgumentException if there are no videos for the provided container ID.
      */
-    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
+    @Throws(
+        RedirectResponseException::class,
+        ClientRequestException::class,
+        ServerResponseException::class,
+        IllegalArgumentException::class
+    )
     fun getContainer(containerId: Int): Container {
         log.debug("Getting container by ID {}", containerId)
 

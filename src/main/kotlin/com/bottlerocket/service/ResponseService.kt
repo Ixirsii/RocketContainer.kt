@@ -130,6 +130,13 @@ class ResponseService(
                 "Exceeded maximum retries while calling dependent service: ${e.message}",
                 status = HttpStatusCode.NotFound
             )
+        } catch (e: IllegalArgumentException) {
+            log.error("Caught IllegalArgumentException attempting to respond to request", e)
+
+            call.respondText(
+                "Not Found: ${e.message}",
+                status = HttpStatusCode.NotFound
+            )
         }
     }
 }

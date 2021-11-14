@@ -35,8 +35,14 @@ class ContainerRepository(
      * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
      * @throws ClientRequestException if a 4xx response is returned.
      * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
+     * @throws IllegalArgumentException if there are no videos for the provided container ID.
      */
-    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
+    @Throws(
+        RedirectResponseException::class,
+        ClientRequestException::class,
+        ServerResponseException::class,
+        IllegalArgumentException::class
+    )
     fun getContainer(containerId: Int): Container {
         log.debug("Getting container {}", containerId)
 
@@ -46,6 +52,11 @@ class ContainerRepository(
                     .map { convertAssetReference(it) }
                 convertVideo(video, assets)
             }
+
+        if (videos.isEmpty()) {
+            throw IllegalArgumentException("Invalid container ID")
+        }
+
         val advertisements: List<Advertisement> = advertisementRepository.listAdvertisements(containerId).advertisements
             .map { convertAdvertisement(it) }
         val images: List<Image> = imageRepository.listImages(containerId).images
@@ -98,14 +109,18 @@ class ContainerRepository(
     private fun getVideos(): Map<Int, List<Video>> {
         val videos: MutableMap<Int, MutableList<Video>> = HashMap()
 
-        for (video in videoRepository.listVideos().videos) {
-            val assets: List<AssetReference> = videoRepository.listAssetReferences(video.id).videoAssets
-                .map { convertAssetReference(it) }
+        videoRepository.listVideos().videos.parallelStream()
+            .map { video ->
+                val assets: List<AssetReference> = videoRepository.listAssetReferences(video.id).videoAssets
+                    .map { convertAssetReference(it) }
 
-            if (videos[video.containerId]?.add(convertVideo(video, assets)) != true) {
-                videos[video.containerId] = mutableListOf(convertVideo(video, assets))
+                Pair(video.containerId, convertVideo(video, assets))
             }
-        }
+            .forEach { pair ->
+                if (videos[pair.first]?.add(pair.second) != true) {
+                    videos[pair.first] = mutableListOf(pair.second)
+                }
+            }
 
         return videos
     }
