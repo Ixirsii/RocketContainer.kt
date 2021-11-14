@@ -12,6 +12,9 @@ import com.bottlerocket.service.convertAssetReference
 import com.bottlerocket.service.convertContainer
 import com.bottlerocket.service.convertImage
 import com.bottlerocket.service.convertVideo
+import io.ktor.client.features.ClientRequestException
+import io.ktor.client.features.RedirectResponseException
+import io.ktor.client.features.ServerResponseException
 
 /**
  * Wrapper for dependency repositories which builds [Container]s.
@@ -21,15 +24,45 @@ class ContainerRepository(
     private val imageRepository: ImageRepository,
     private val videoRepository: VideoRepository
 ) {
+
+    /**
+     * Get a container by ID.
+     *
+     * @param containerId Container ID.
+     * @return container by ID.
+     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
+     * @throws ClientRequestException if a 4xx response is returned.
+     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
+     */
+    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
+    fun getContainer(containerId: Int): Container {
+        val videos: List<Video> = videoRepository.listVideos(containerId).videos
+            .map { video ->
+                val assets: List<AssetReference> = videoRepository.listAssetReferences(video.id).videoAssets
+                    .map { convertAssetReference(it) }
+                convertVideo(video, assets)
+            }
+        val advertisements: List<Advertisement> = advertisementRepository.listAdvertisements(containerId).advertisements
+            .map { convertAdvertisement(it) }
+        val images: List<Image> = imageRepository.listImages(containerId).images
+            .map { convertImage(it) }
+
+        return convertContainer(containerId, advertisements, images, videos)
+    }
+
     /**
      * Get a list of all containers.
      *
      * @return all containers.
+     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
+     * @throws ClientRequestException if a 4xx response is returned.
+     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
      */
+    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun listContainers(): List<Container> {
+        val videos: Map<Int, List<Video>> = getVideos()
         val advertisements: Advertisements = advertisementRepository.listAdvertisements()
         val images: Images = imageRepository.listImages()
-        val videos: Map<Int, List<Video>> = getVideos()
 
         return videos.map { entry ->
             val ads: List<Advertisement> = advertisements.advertisements
@@ -43,27 +76,6 @@ class ContainerRepository(
         }
     }
 
-    /**
-     * Get a container by ID.
-     *
-     * @param containerId Container ID.
-     * @return container by ID.
-     */
-    fun getContainer(containerId: Int): Container {
-        val advertisements: List<Advertisement> = advertisementRepository.listAdvertisements(containerId).advertisements
-            .map { convertAdvertisement(it) }
-        val images: List<Image> = imageRepository.listImages(containerId).images
-            .map { convertImage(it) }
-        val videos: List<Video> = videoRepository.listVideos(containerId).videos
-            .map { video ->
-                val assets: List<AssetReference> = videoRepository.listAssetReferences(video.id).videoAssets
-                    .map { convertAssetReference(it) }
-                convertVideo(video, assets)
-            }
-
-        return convertContainer(containerId, advertisements, images, videos)
-    }
-
     /* ********************************************************************************************************** *
      *                                             Private utility functions                                      *
      * ********************************************************************************************************** */
@@ -72,7 +84,11 @@ class ContainerRepository(
      * Get a map of container ID to a list of videos in that container.
      *
      * @return map of container ID to a list of videos.
+     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
+     * @throws ClientRequestException if a 4xx response is returned.
+     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
      */
+    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     private fun getVideos(): Map<Int, List<Video>> {
         val videos: MutableMap<Int, MutableList<Video>> = HashMap()
 

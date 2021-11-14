@@ -9,13 +9,13 @@ import kotlinx.serialization.json.Json
 /**
  * [HttpClient] provider.
  *
- * @param json Json configuration.
- * @return HttpClient.
+ * @param engine [HttpClientEngine].
+ * @return [HttpClient].
  */
-fun httpClient(engine: HttpClientEngine, json: Json): HttpClient {
+fun httpClient(engine: HttpClientEngine): HttpClient {
     return HttpClient(engine) {
         install(JsonFeature) {
-            serializer = KotlinxSerializer(json)
+            serializer = KotlinxSerializer(json())
         }
     }
 }
@@ -23,7 +23,7 @@ fun httpClient(engine: HttpClientEngine, json: Json): HttpClient {
 /**
  * [Json] provider.
  *
- * @return Json.
+ * @return [Json].
  */
 fun json(): Json {
     return Json {

@@ -8,7 +8,9 @@ import com.bottlerocket.data.videoService.Video
 import com.bottlerocket.data.videoService.VideoAssets
 import com.bottlerocket.data.videoService.Videos
 import io.ktor.client.HttpClient
-import io.ktor.client.features.ResponseException
+import io.ktor.client.features.ClientRequestException
+import io.ktor.client.features.RedirectResponseException
+import io.ktor.client.features.ServerResponseException
 import io.ktor.client.request.parameter
 import kotlinx.coroutines.runBlocking
 
@@ -27,8 +29,11 @@ class VideoRepository(client: HttpClient) : Logging by LoggingImpl<VideoReposito
      *
      * @param videoId ID of the video to get.
      * @return requested video.
-     * @throws ResponseException if the maximum number of attempts is exceeded.
+     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
+     * @throws ClientRequestException if a 4xx response is returned.
+     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
      */
+    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun getVideo(videoId: Int): Video = runBlocking {
         log.debug("Getting video {}", videoId)
         exponentialBackoffAndRetry("$endpoint/$videoId")
@@ -39,8 +44,11 @@ class VideoRepository(client: HttpClient) : Logging by LoggingImpl<VideoReposito
      *
      * @param videoId ID of the video to get assets from.
      * @return all asset references for specified video.
-     * @throws ResponseException if the maximum number of attempts is exceeded.
+     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
+     * @throws ClientRequestException if a 4xx response is returned.
+     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
      */
+    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun listAssetReferences(videoId: Int): VideoAssets = runBlocking {
         log.debug("Listing asset references for video {}", videoId)
         exponentialBackoffAndRetry("$endpoint/$videoId/$assetReferenceSuffix")
@@ -52,8 +60,11 @@ class VideoRepository(client: HttpClient) : Logging by LoggingImpl<VideoReposito
      * @param videoId ID of the video to get assets from.
      * @param assetType Asset type to filter by.
      * @return filtered asset references for specified video.
-     * @throws ResponseException if the maximum number of attempts is exceeded.
+     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
+     * @throws ClientRequestException if a 4xx response is returned.
+     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
      */
+    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun listAssetReferences(videoId: Int, assetType: AssetType): VideoAssets = runBlocking {
         log.debug("Listing asset references for video {} by type {}", videoId, assetType)
         exponentialBackoffAndRetry("$endpoint/$videoId/$assetReferenceSuffix") {
@@ -65,8 +76,11 @@ class VideoRepository(client: HttpClient) : Logging by LoggingImpl<VideoReposito
      * List all videos from video service.
      *
      * @return all videos.
-     * @throws ResponseException if the maximum number of attempts is exceeded.
+     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
+     * @throws ClientRequestException if a 4xx response is returned.
+     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
      */
+    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun listVideos(): Videos = runBlocking {
         log.debug("Listing videos")
         exponentialBackoffAndRetry(endpoint)
@@ -77,8 +91,11 @@ class VideoRepository(client: HttpClient) : Logging by LoggingImpl<VideoReposito
      *
      * @param containerId Container ID to filter by.
      * @return filtered list of videos.
-     * @throws ResponseException if the maximum number of attempts is exceeded.
+     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
+     * @throws ClientRequestException if a 4xx response is returned.
+     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
      */
+    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun listVideos(containerId: Int): Videos = runBlocking {
         log.debug("Listing videos by container {}", containerId)
         exponentialBackoffAndRetry(endpoint) {
@@ -91,8 +108,11 @@ class VideoRepository(client: HttpClient) : Logging by LoggingImpl<VideoReposito
      *
      * @param type Video type to filter by.
      * @return filtered list of videos.
-     * @throws ResponseException if the maximum number of attempts is exceeded.
+     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
+     * @throws ClientRequestException if a 4xx response is returned.
+     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
      */
+    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun listVideos(type: VideoType): Videos = runBlocking {
         log.debug("Listing videos by type {}", type)
         exponentialBackoffAndRetry(endpoint) {
@@ -106,8 +126,11 @@ class VideoRepository(client: HttpClient) : Logging by LoggingImpl<VideoReposito
      * @param containerId Container ID to filter by.
      * @param type Video type to filter by.
      * @return filtered list of videos.
-     * @throws ResponseException if the maximum number of attempts is exceeded.
+     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
+     * @throws ClientRequestException if a 4xx response is returned.
+     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
      */
+    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun listVideos(containerId: Int, type: VideoType): Videos = runBlocking {
         log.debug("Listing videos by container {} and type {}", containerId, type)
         exponentialBackoffAndRetry(endpoint) {

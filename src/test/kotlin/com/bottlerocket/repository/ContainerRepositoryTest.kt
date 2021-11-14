@@ -33,20 +33,20 @@ internal class ContainerRepositoryTest {
     @Test
     fun `GIVEN ads and images WHEN listContainers THEN returns containers`() {
         // Given
-        every { advertisementRepository.listAdvertisements() } returns advertisements
-        every { imageRepository.listImages() } returns images
         every { videoRepository.listVideos() } returns videos
         every { videoRepository.listAssetReferences(any()) } returns videoAssets
+        every { advertisementRepository.listAdvertisements() } returns advertisements
+        every { imageRepository.listImages() } returns images
 
         // When
         val actual: List<Container> = underTest.listContainers()
 
         // Then
         verifySequence {
-            advertisementRepository.listAdvertisements()
-            imageRepository.listImages()
             videoRepository.listVideos()
             videoRepository.listAssetReferences(any())
+            advertisementRepository.listAdvertisements()
+            imageRepository.listImages()
         }
 
         assertEquals(listOf(fullContainer), actual, "Containers should equal expected")
@@ -55,20 +55,20 @@ internal class ContainerRepositoryTest {
     @Test
     fun `GIVEN container ID WHEN getContainer THEN returns container`() {
         // Given
-        every { advertisementRepository.listAdvertisements(any()) } returns advertisements
-        every { imageRepository.listImages(any()) } returns images
         every { videoRepository.listVideos(any<Int>()) } returns videos
         every { videoRepository.listAssetReferences(any()) } returns videoAssets
+        every { advertisementRepository.listAdvertisements(any()) } returns advertisements
+        every { imageRepository.listImages(any()) } returns images
 
         // When
         val actual: Container = underTest.getContainer(ID)
 
         // Then
         verifySequence {
-            advertisementRepository.listAdvertisements(any())
-            imageRepository.listImages(any())
             videoRepository.listVideos(any<Int>())
             videoRepository.listAssetReferences(any())
+            advertisementRepository.listAdvertisements(any())
+            imageRepository.listImages(any())
         }
 
         assertEquals(fullContainer, actual, "Container should equal expected")

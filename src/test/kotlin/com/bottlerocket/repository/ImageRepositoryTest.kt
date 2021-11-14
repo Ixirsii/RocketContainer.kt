@@ -2,7 +2,6 @@ package com.bottlerocket.repository
 
 import com.bottlerocket.data.imageService.Images
 import com.bottlerocket.module.httpClient
-import com.bottlerocket.module.json
 import com.bottlerocket.util.CONTAINER_ID
 import com.bottlerocket.util.ID
 import com.bottlerocket.util.IMAGE_NAME
@@ -37,7 +36,7 @@ internal class ImageRepositoryTest {
             status = HttpStatusCode.OK
         )
     }
-    private val client: HttpClient = httpClient(mockEngine, json())
+    private val client: HttpClient = httpClient(mockEngine)
 
     private lateinit var underTest: ImageRepository
 

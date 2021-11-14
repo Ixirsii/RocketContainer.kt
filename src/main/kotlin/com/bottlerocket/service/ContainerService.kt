@@ -6,6 +6,9 @@ import com.bottlerocket.data.containerService.Image
 import com.bottlerocket.data.containerService.Video
 import com.bottlerocket.repository.ContainerRepository
 import io.github.pavleprica.kotlin.cache.time.based.CustomTimeBasedCache
+import io.ktor.client.features.ClientRequestException
+import io.ktor.client.features.RedirectResponseException
+import io.ktor.client.features.ServerResponseException
 import java.time.Duration
 import java.util.Optional
 
@@ -23,7 +26,11 @@ class ContainerService(
      * List all containers.
      *
      * @return all containers.
+     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
+     * @throws ClientRequestException if a 4xx response is returned.
+     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
      */
+    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun listContainers(): List<Container> {
         val containers: List<Container> = containerRepository.listContainers()
 
@@ -37,7 +44,11 @@ class ContainerService(
      *
      * @param containerId Container ID.
      * @return container advertisements.
+     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
+     * @throws ClientRequestException if a 4xx response is returned.
+     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
      */
+    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun getAdvertisements(containerId: Int): List<Advertisement> {
         val container: Container = getContainer(containerId)
 
@@ -49,7 +60,11 @@ class ContainerService(
      *
      * @param containerId Container ID.
      * @return container by ID.
+     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
+     * @throws ClientRequestException if a 4xx response is returned.
+     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
      */
+    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun getContainer(containerId: Int): Container {
         val cacheValue: Optional<Container> = cache[containerId]
 
@@ -69,7 +84,11 @@ class ContainerService(
      *
      * @param containerId Container ID.
      * @return container images.
+     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
+     * @throws ClientRequestException if a 4xx response is returned.
+     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
      */
+    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun getImages(containerId: Int): List<Image> {
         val container: Container = getContainer(containerId)
 
@@ -81,7 +100,11 @@ class ContainerService(
      *
      * @param containerId Container ID.
      * @return container videos.
+     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
+     * @throws ClientRequestException if a 4xx response is returned.
+     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
      */
+    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun getVideos(containerId: Int): List<Video> {
         val container: Container = getContainer(containerId)
 

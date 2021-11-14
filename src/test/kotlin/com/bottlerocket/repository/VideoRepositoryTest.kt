@@ -4,7 +4,6 @@ import com.bottlerocket.data.videoService.Video
 import com.bottlerocket.data.videoService.VideoAssets
 import com.bottlerocket.data.videoService.Videos
 import com.bottlerocket.module.httpClient
-import com.bottlerocket.module.json
 import com.bottlerocket.util.CONTAINER_ID
 import com.bottlerocket.util.DESCRIPTION
 import com.bottlerocket.util.EXPIRATION_DATE
@@ -48,7 +47,7 @@ internal class VideoRepositoryTest {
                 }""".trimMargin()
             )
         )
-        val underTest = VideoRepository(httpClient(mockEngine, json()))
+        val underTest = VideoRepository(httpClient(mockEngine))
 
         // When
         val actual: Video = underTest.getVideo(ID)
@@ -65,7 +64,7 @@ internal class VideoRepositoryTest {
     fun `GIVEN invalidRequest WHEN getVideo THEN throws ServerResponseException`() {
         // Given
         val mockEngine: MockEngine = getMockEngine()
-        val underTest = VideoRepository(httpClient(mockEngine, json()))
+        val underTest = VideoRepository(httpClient(mockEngine))
 
         // When
         assertThrows<ServerResponseException> { underTest.getVideo(ID) }
@@ -89,7 +88,7 @@ internal class VideoRepositoryTest {
                 }]}""".trimIndent()
             )
         )
-        val underTest = VideoRepository(httpClient(mockEngine, json()))
+        val underTest = VideoRepository(httpClient(mockEngine))
 
         // When
         val actual: VideoAssets = underTest.listAssetReferences(ID)
@@ -114,7 +113,7 @@ internal class VideoRepositoryTest {
                 }]}""".trimIndent()
             )
         )
-        val underTest = VideoRepository(httpClient(mockEngine, json()))
+        val underTest = VideoRepository(httpClient(mockEngine))
 
         // When
         val actual: VideoAssets = underTest.listAssetReferences(ID, assetType)
@@ -144,7 +143,7 @@ internal class VideoRepositoryTest {
                 }]}""".trimIndent()
             )
         )
-        val underTest = VideoRepository(httpClient(mockEngine, json()))
+        val underTest = VideoRepository(httpClient(mockEngine))
 
         // When
         val actual: Videos = underTest.listVideos()
@@ -170,7 +169,7 @@ internal class VideoRepositoryTest {
                 }]}""".trimIndent()
             )
         )
-        val underTest = VideoRepository(httpClient(mockEngine, json()))
+        val underTest = VideoRepository(httpClient(mockEngine))
 
         // When
         val actual: Videos = underTest.listVideos(CONTAINER_ID)
@@ -199,7 +198,7 @@ internal class VideoRepositoryTest {
                 }]}""".trimIndent()
             )
         )
-        val underTest = VideoRepository(httpClient(mockEngine, json()))
+        val underTest = VideoRepository(httpClient(mockEngine))
 
         // When
         val actual: Videos = underTest.listVideos(videoType)
@@ -228,7 +227,7 @@ internal class VideoRepositoryTest {
                 }]}""".trimIndent()
             )
         )
-        val underTest = VideoRepository(httpClient(mockEngine, json()))
+        val underTest = VideoRepository(httpClient(mockEngine))
 
         // When
         val actual: Videos = underTest.listVideos(CONTAINER_ID, videoType)

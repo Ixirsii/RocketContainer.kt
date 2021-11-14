@@ -23,7 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import java.util.*
 
 @ExtendWith(MockKExtension::class)
-class ContainerServiceTest {
+internal class ContainerServiceTest {
     @MockK
     private lateinit var containerRepository: ContainerRepository
 
