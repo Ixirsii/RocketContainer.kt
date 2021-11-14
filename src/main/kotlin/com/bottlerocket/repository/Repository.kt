@@ -31,7 +31,7 @@ abstract class Repository(val client: HttpClient) : Logging {
         url: String,
         block: HttpRequestBuilder.() -> Unit = {}
     ): T {
-        val maxAttempts = 3
+        val maxAttempts = 10
 
         // Start at 1 instead of 0 because the last attempt is outside the loop
         for (i in (1 until maxAttempts)) {
@@ -43,7 +43,7 @@ abstract class Repository(val client: HttpClient) : Logging {
                 delay(backoff)
             } catch (e: ServerResponseException) {
                 val backoff: Long = exponentialBackoff(i)
-                log.warn("Caught RedirectResponseException calling {} on attempt {}. Waiting {}ms", url, i, backoff, e)
+                log.warn("Caught ServerResponseException calling {} on attempt {}. Waiting {}ms", url, i, backoff, e)
                 delay(backoff)
             }
         }
@@ -63,9 +63,9 @@ abstract class Repository(val client: HttpClient) : Logging {
      */
     @PublishedApi
     internal fun exponentialBackoff(attempt: Int): Long {
-        val maxBackoff = 3_000L
+        val maxBackoff = 1_000L
         val exponent: Long = 2f.pow(attempt).toLong()
-        val randomMillis: Long = Random.nextLong(0, 1_000)
+        val randomMillis: Long = Random.nextLong(0, 50)
         val backoff: Long = exponent + randomMillis
 
         return min(backoff, maxBackoff)

@@ -58,12 +58,12 @@ class ContainerService(
         val cacheValue: Optional<Container> = cache[containerId]
 
         if (cacheValue.isPresent) {
-            log.debug("Container {} was in cache")
+            log.debug("Container {} was in cache", containerId)
 
             return cacheValue.get()
         }
 
-        log.debug("Container {} was not in cache")
+        log.debug("Container {} was not in cache", containerId)
 
         val container: Container = containerRepository.getContainer(containerId)
 
