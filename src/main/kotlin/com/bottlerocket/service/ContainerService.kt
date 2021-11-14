@@ -1,44 +1,47 @@
 package com.bottlerocket.service
 
-import com.bottlerocket.data.advertisementService.Advertisements
 import com.bottlerocket.data.containerService.Advertisement
-import com.bottlerocket.data.containerService.AssetReference
 import com.bottlerocket.data.containerService.Container
 import com.bottlerocket.data.containerService.Image
 import com.bottlerocket.data.containerService.Video
-import com.bottlerocket.data.imageService.Images
-import com.bottlerocket.repository.AdvertisementRepository
-import com.bottlerocket.repository.ImageRepository
-import com.bottlerocket.repository.VideoRepository
+import com.bottlerocket.repository.ContainerRepository
+import io.github.pavleprica.kotlin.cache.time.based.CustomTimeBasedCache
+import java.time.Duration
+import java.util.Optional
 
 /**
- * Container service.
+ * Service/business logic layer for containers.
  */
 class ContainerService(
-    private val advertisementRepository: AdvertisementRepository,
-    private val imageRepository: ImageRepository,
-    private val videoRepository: VideoRepository
+    /** Container repository for getting data from dependencies. */
+    private val containerRepository: ContainerRepository,
+    /** Data cache. */
+    private val cache: CustomTimeBasedCache<Int, Container> = CustomTimeBasedCache(Duration.ofMinutes(15))
 ) {
+
     /**
-     * Get a list of all containers.
+     * List all containers.
      *
      * @return all containers.
      */
     fun listContainers(): List<Container> {
-        val advertisements: Advertisements = advertisementRepository.listAdvertisements()
-        val images: Images = imageRepository.listImages()
-        val videos: Map<Int, List<Video>> = getVideos()
+        val containers: List<Container> = containerRepository.listContainers()
 
-        return videos.map { entry ->
-            val ads: List<Advertisement> = advertisements.advertisements
-                .filter { it.containerId == entry.key }
-                .map { convertAdvertisement(it) }
-            val containerImages: List<Image> = images.images
-                .filter { it.containerId == entry.key }
-                .map { convertImage(it) }
+        containers.forEach { cache[it.id] = it }
 
-            convertContainer(entry.key, ads, containerImages, entry.value)
-        }
+        return containers
+    }
+
+    /**
+     * Get advertisements for a container.
+     *
+     * @param containerId Container ID.
+     * @return container advertisements.
+     */
+    fun getAdvertisements(containerId: Int): List<Advertisement> {
+        val container: Container = getContainer(containerId)
+
+        return container.ads
     }
 
     /**
@@ -48,41 +51,40 @@ class ContainerService(
      * @return container by ID.
      */
     fun getContainer(containerId: Int): Container {
-        val advertisements: List<Advertisement> = advertisementRepository.listAdvertisements(containerId).advertisements
-            .map { convertAdvertisement(it) }
-        val images: List<Image> = imageRepository.listImages(containerId).images
-            .map { convertImage(it) }
-        val videos: List<Video> = videoRepository.listVideos(containerId).videos
-            .map { video ->
-                val assets: List<AssetReference> = videoRepository.listAssetReferences(video.id).videoAssets
-                    .map { convertAssetReference(it) }
-                convertVideo(video, assets)
-            }
+        val cacheValue: Optional<Container> = cache[containerId]
 
-        return convertContainer(containerId, advertisements, images, videos)
-    }
-
-    /* ********************************************************************************************************** *
-     *                                             Private utility functions                                      *
-     * ********************************************************************************************************** */
-
-    /**
-     * Get a map of container ID to a list of videos in that container.
-     *
-     * @return map of container ID to a list of videos.
-     */
-    private fun getVideos(): Map<Int, List<Video>> {
-        val videos: MutableMap<Int, MutableList<Video>> = HashMap()
-
-        for (video in videoRepository.listVideos().videos) {
-            val assets: List<AssetReference> = videoRepository.listAssetReferences(video.id).videoAssets
-                .map { convertAssetReference(it) }
-
-            if (videos[video.containerId]?.add(convertVideo(video, assets)) != true) {
-                videos[video.containerId] = mutableListOf(convertVideo(video, assets))
-            }
+        if (cacheValue.isPresent) {
+            return cacheValue.get()
         }
 
-        return videos
+        val container: Container = containerRepository.getContainer(containerId)
+
+        cache[containerId] = container
+
+        return container
+    }
+
+    /**
+     * Get images for a container.
+     *
+     * @param containerId Container ID.
+     * @return container images.
+     */
+    fun getImages(containerId: Int): List<Image> {
+        val container: Container = getContainer(containerId)
+
+        return container.images
+    }
+
+    /**
+     * Get videos for a container.
+     *
+     * @param containerId Container ID.
+     * @return container videos.
+     */
+    fun getVideos(containerId: Int): List<Video> {
+        val container: Container = getContainer(containerId)
+
+        return container.videos
     }
 }
