@@ -16,6 +16,21 @@ requests and making outgoing requests.
 3. **Ktor:** HTTP client and server
 4. **Logback:** Application logging
 5. **JUnit:** Unit and integration tests
+6. **Jacoco:** Test coverage reporting and verification
+
+## Building ##
+
+This project was built and test using JDK 16. The minimum required version of
+Java is 13 or the kotlin-cache dependency will throw a class version error.
+
+## Running ##
+
+This project can be run using the `run` gradle target.
+
+## Testing ##
+
+This project has 2 test targets, `integrationTest` and `test`. The gradle
+`check` task will run both.
 
 ## Roadmap ##
 

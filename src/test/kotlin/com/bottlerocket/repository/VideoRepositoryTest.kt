@@ -70,7 +70,7 @@ internal class VideoRepositoryTest {
         assertThrows<ServerResponseException> { underTest.getVideo(ID) }
 
         // Then
-        assertEquals(3, mockEngine.requestHistory.size, "Should make 3 requests")
+        assertEquals(10, mockEngine.requestHistory.size, "Should make 10 requests")
         mockEngine.requestHistory.forEach {
             assertTrue(it.url.toString().endsWith(ID.toString()), "URL should contain video ID")
         }
