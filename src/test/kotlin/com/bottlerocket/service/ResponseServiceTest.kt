@@ -1,6 +1,7 @@
 package com.bottlerocket.service
 
 import com.bottlerocket.module.httpClient
+import com.bottlerocket.util.ID
 import com.bottlerocket.util.fullContainer
 import io.ktor.application.ApplicationCall
 import io.ktor.client.HttpClient
@@ -8,13 +9,9 @@ import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.features.ClientRequestException
 import io.ktor.client.features.RedirectResponseException
-import io.ktor.client.features.SendCountExceedException
 import io.ktor.client.features.ServerResponseException
 import io.ktor.client.request.get
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.headersOf
 import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.utils.io.ByteReadChannel
@@ -47,6 +44,84 @@ internal class ResponseServiceTest {
 
     init {
         mockkStatic("io.ktor.response.ApplicationResponseFunctionsKt")
+    }
+
+    @Test
+    fun `GIVEN success WHEN getContainer THEN responds containers`() {
+        // Given
+        every { containerService.getContainer(any()) } returns fullContainer
+        coJustRun { call.respond(any()) }
+
+        // When
+        runBlocking { underTest.getContainer(ID, call) }
+
+        // Then
+        verify(exactly = 1) {
+            containerService.getContainer(any())
+        }
+        confirmVerified(containerService)
+    }
+
+    @Test
+    fun `GIVEN ClientRequestException WHEN getContainer THEN responds BadRequest`() {
+        // Given
+        val exception: ClientRequestException = getClientRequestException()
+
+        every { containerService.getContainer(any()) } throws exception
+        coJustRun { call.respondText(any(), status = capture(statusCapture)) }
+
+        // When
+        runBlocking { underTest.getContainer(ID, call) }
+
+        // Then
+        verify(exactly = 1) {
+            containerService.getContainer(any())
+        }
+        confirmVerified(containerService)
+
+        assertEquals(HttpStatusCode.NotFound, statusCapture.captured, "HTTP status code should equal expected")
+    }
+
+    @Test
+    fun `GIVEN RedirectResponseException WHEN getContainer THEN responds BadGateway`() {
+        // Given
+        val exception: RedirectResponseException = getRedirectResponseException()
+
+        mockkStatic("io.ktor.response.ApplicationResponseFunctionsKt")
+        every { containerService.getContainer(any()) } throws exception
+        coJustRun { call.respondText(any(), status = capture(statusCapture)) }
+
+        // When
+        runBlocking { underTest.getContainer(ID, call) }
+
+        // Then
+        verify(exactly = 1) {
+            containerService.getContainer(any())
+        }
+        confirmVerified(containerService)
+
+        assertEquals(HttpStatusCode.InternalServerError, statusCapture.captured, "HTTP status code should equal expected")
+    }
+
+    @Test
+    fun `GIVEN ServerResponseException WHEN getContainer THEN responds BadGateway`() {
+        // Given
+        val exception: ServerResponseException = getServerResponseException()
+
+        mockkStatic("io.ktor.response.ApplicationResponseFunctionsKt")
+        every { containerService.getContainer(any()) } throws exception
+        coJustRun { call.respondText(any(), status = capture(statusCapture)) }
+
+        // When
+        runBlocking { underTest.getContainer(ID, call) }
+
+        // Then
+        verify(exactly = 1) {
+            containerService.getContainer(any())
+        }
+        confirmVerified(containerService)
+
+        assertEquals(HttpStatusCode.NotFound, statusCapture.captured, "HTTP status code should equal expected")
     }
 
     @Test
@@ -103,7 +178,7 @@ internal class ResponseServiceTest {
         }
         confirmVerified(containerService)
 
-        assertEquals(HttpStatusCode.BadGateway, statusCapture.captured, "HTTP status code should equal expected")
+        assertEquals(HttpStatusCode.InternalServerError, statusCapture.captured, "HTTP status code should equal expected")
     }
 
     @Test
@@ -124,7 +199,7 @@ internal class ResponseServiceTest {
         }
         confirmVerified(containerService)
 
-        assertEquals(HttpStatusCode.BadGateway, statusCapture.captured, "HTTP status code should equal expected")
+        assertEquals(HttpStatusCode.InternalServerError, statusCapture.captured, "HTTP status code should equal expected")
     }
 
     /* ********************************************************************************************************** *

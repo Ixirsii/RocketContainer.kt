@@ -23,23 +23,6 @@ class ContainerService(
 ) {
 
     /**
-     * List all containers.
-     *
-     * @return all containers.
-     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
-     * @throws ClientRequestException if a 4xx response is returned.
-     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
-     */
-    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
-    fun listContainers(): List<Container> {
-        val containers: List<Container> = containerRepository.listContainers()
-
-        containers.forEach { cache[it.id] = it }
-
-        return containers
-    }
-
-    /**
      * Get advertisements for a container.
      *
      * @param containerId Container ID.
@@ -109,5 +92,22 @@ class ContainerService(
         val container: Container = getContainer(containerId)
 
         return container.videos
+    }
+
+    /**
+     * List all containers.
+     *
+     * @return all containers.
+     * @throws RedirectResponseException if a 3xx response is returned on the maximum number of attempts.
+     * @throws ClientRequestException if a 4xx response is returned.
+     * @throws ServerResponseException if a 5xx response is returned on the maximum number of attempts.
+     */
+    @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
+    fun listContainers(): List<Container> {
+        val containers: List<Container> = containerRepository.listContainers()
+
+        containers.forEach { cache[it.id] = it }
+
+        return containers
     }
 }

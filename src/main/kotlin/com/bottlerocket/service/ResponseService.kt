@@ -16,10 +16,31 @@ class ResponseService(
     private val containerService: ContainerService
 ) {
 
+    suspend fun getContainer(containerId: Int, call: ApplicationCall) {
+        try {
+            call.respond(containerService.getContainer(containerId))
+        } catch (e: ClientRequestException) {
+            call.respondText(
+                "Bad request: ${e.message}",
+                status = HttpStatusCode.NotFound
+            )
+        } catch (e: RedirectResponseException) {
+            call.respondText(
+                "Service configured incorrectly. Client returned 3xx: ${e.message}",
+                status = HttpStatusCode.InternalServerError
+            )
+        } catch (e: ServerResponseException) {
+            call.respondText(
+                "Exceeded maximum retries while calling dependent service: ${e.message}",
+                status = HttpStatusCode.NotFound
+            )
+        }
+    }
+
     /**
      * Respond to GET /containers.
      *
-     * @param call Ktor application call for getting parameters and responding to the request.
+     * @param call Application call for getting parameters and responding to the request.
      */
     suspend fun listContainers(call: ApplicationCall) {
         try {
@@ -32,12 +53,12 @@ class ResponseService(
         } catch (e: RedirectResponseException) {
             call.respondText(
                 "Service configured incorrectly. Client returned 3xx: ${e.message}",
-                status = HttpStatusCode.BadGateway
+                status = HttpStatusCode.InternalServerError
             )
         } catch (e: ServerResponseException) {
             call.respondText(
                 "Exceeded maximum retries while calling dependent service: ${e.message}",
-                status = HttpStatusCode.BadGateway
+                status = HttpStatusCode.InternalServerError
             )
         }
     }

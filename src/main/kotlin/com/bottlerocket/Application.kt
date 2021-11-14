@@ -7,6 +7,8 @@ import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.client.engine.cio.CIO
 import io.ktor.features.ContentNegotiation
+import io.ktor.http.HttpStatusCode
+import io.ktor.response.respondText
 import io.ktor.routing.Route
 import io.ktor.routing.get
 import io.ktor.routing.route
@@ -38,15 +40,32 @@ fun Route.containerRouting() {
         }
         route("{containerId}") {
             get {
+                val containerId: Int = call.parameters["containerId"]?.toInt() ?: return@get call.respondText(
+                    "Missing or malformed containerId",
+                    status = HttpStatusCode.BadRequest
+                )
 
+                responseService.getContainer(containerId, call)
             }
             get("ads") {
+                val containerId: Int = call.parameters["containerId"]?.toInt() ?: return@get call.respondText(
+                    "Missing or malformed containerId",
+                    status = HttpStatusCode.BadRequest
+                )
 
             }
             get("images") {
+                val containerId: Int = call.parameters["containerId"]?.toInt() ?: return@get call.respondText(
+                    "Missing or malformed containerId",
+                    status = HttpStatusCode.BadRequest
+                )
 
             }
             get("videos") {
+                val containerId: Int = call.parameters["containerId"]?.toInt() ?: return@get call.respondText(
+                    "Missing or malformed containerId",
+                    status = HttpStatusCode.BadRequest
+                )
 
             }
         }
