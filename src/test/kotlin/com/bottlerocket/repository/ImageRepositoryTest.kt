@@ -1,6 +1,5 @@
 package com.bottlerocket.repository
 
-import com.bottlerocket.data.imageService.Image
 import com.bottlerocket.data.imageService.Images
 import com.bottlerocket.module.httpClient
 import com.bottlerocket.module.json
@@ -17,10 +16,10 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.utils.io.ByteReadChannel
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 internal class ImageRepositoryTest {
 

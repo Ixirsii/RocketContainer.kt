@@ -9,6 +9,18 @@ plugins {
 group 'com.bottlerocket'
 version '1.0-SNAPSHOT'
 
+sourceSets {
+    integrationTest {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom implementation
+    integrationTestRuntimeOnly.extendsFrom runtimeOnly
+}
+
 repositories {
     mavenCentral()
 }
@@ -25,10 +37,11 @@ dependencies {
     implementation "io.ktor:ktor-server-core:$ktor_version"
     implementation "io.ktor:ktor-server-netty:$ktor_version"
 
-    testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+    testImplementation "org.junit.jupiter:junit-jupiter:$junit_version"
     testImplementation "io.ktor:ktor-client-mock:$ktor_version"
     testImplementation 'io.mockk:mockk:1.12.0'
+
+    integrationTestImplementation "org.junit.jupiter:junit-jupiter:$junit_version"
 }
 
 ext.coverageExclusions = [
@@ -38,10 +51,16 @@ ext.coverageExclusions = [
         "com.bottlerocket.module.*"
 ]
 
-check.dependsOn jacocoTestCoverageVerification
-
 application {
     mainClass = 'com.bottlerocket.ApplicationKt'
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+    sourceCompatibility = "11"
+    targetCompatibility = "11"
 }
 
 jacoco {
@@ -85,7 +104,20 @@ test {
     finalizedBy tasks.jacocoTestReport
     systemProperty 'junit.jupiter.execution.parallel.enabled', true
     systemProperty 'junit.jupiter.execution.parallel.mode.default', 'concurrent'
-    useJUnitPlatform() {
-        excludeTags "integration"
-    }
+    useJUnitPlatform()
 }
+
+tasks.register('integrationTest', Test) {
+    description = 'Runs integration tests.'
+    group = 'verification'
+
+    println sourceSets.integrationTest.output.classesDirs.asPath
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    shouldRunAfter test
+
+    useJUnitPlatform()
+}
+
+check.dependsOn jacocoTestCoverageVerification
+check.dependsOn integrationTest

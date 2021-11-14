@@ -2,7 +2,6 @@ package com.bottlerocket.repository
 
 import com.bottlerocket.data.AssetType
 import com.bottlerocket.data.VideoType
-import com.bottlerocket.data.imageService.Images
 import com.bottlerocket.data.videoService.Video
 import com.bottlerocket.data.videoService.VideoAssets
 import com.bottlerocket.data.videoService.Videos
@@ -12,16 +11,14 @@ import io.ktor.client.features.ServerResponseException
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
 import kotlinx.serialization.json.Json
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
-@Tag("integration")
 internal class VideoRepositoryIntegrationTest {
     private val client = HttpClient(CIO) {
         install(JsonFeature) {
@@ -73,7 +70,7 @@ internal class VideoRepositoryIntegrationTest {
 
         // Then
         assertNotNull(actual, "Response should not be null")
-        assertFalse("Response should not be empty") { actual.videoAssets.isEmpty() }
+        assertFalse(actual.videoAssets.isEmpty(), "Response should not be empty")
     }
 
     @Test
@@ -86,7 +83,7 @@ internal class VideoRepositoryIntegrationTest {
 
         // Then
         assertNotNull(actual, "Response should not be null")
-        assertTrue("Response should be empty") { actual.videoAssets.isEmpty() }
+        assertTrue(actual.videoAssets.isEmpty(), "Response should be empty")
     }
 
     @Test
@@ -100,7 +97,7 @@ internal class VideoRepositoryIntegrationTest {
 
         // Then
         assertNotNull(actual, "Response should not be null")
-        assertFalse("Response should not be empty") { actual.videoAssets.isEmpty() }
+        assertFalse(actual.videoAssets.isEmpty(), "Response should not be empty")
     }
 
     @Test
@@ -114,7 +111,7 @@ internal class VideoRepositoryIntegrationTest {
 
         // Then
         assertNotNull(actual, "Response should not be null")
-        assertTrue("Response should be empty") { actual.videoAssets.isEmpty() }
+        assertTrue(actual.videoAssets.isEmpty(), "Response should be empty")
     }
 
     @Test
@@ -124,7 +121,7 @@ internal class VideoRepositoryIntegrationTest {
 
         // Then
         assertNotNull(actual, "Response should not be null")
-        assertFalse("Response should not be empty") { actual.videos.isEmpty() }
+        assertFalse(actual.videos.isEmpty(), "Response should not be empty")
     }
 
     @Test
@@ -137,7 +134,7 @@ internal class VideoRepositoryIntegrationTest {
 
         // Then
         assertNotNull(actual, "Response should not be null")
-        assertFalse("Response should not be empty") { actual.videos.isEmpty() }
+        assertFalse(actual.videos.isEmpty(), "Response should not be empty")
     }
 
     @Test
@@ -150,7 +147,7 @@ internal class VideoRepositoryIntegrationTest {
 
         // Then
         assertNotNull(actual, "Response should not be null")
-        assertTrue("Response should be empty") { actual.videos.isEmpty() }
+        assertTrue(actual.videos.isEmpty(), "Response should be empty")
     }
 
     @Test
@@ -163,7 +160,7 @@ internal class VideoRepositoryIntegrationTest {
 
         // Then
         assertNotNull(actual, "Response should not be null")
-        assertFalse("Response should not be empty") { actual.videos.isEmpty() }
+        assertFalse(actual.videos.isEmpty(), "Response should not be empty")
     }
 
     @Test
@@ -177,7 +174,7 @@ internal class VideoRepositoryIntegrationTest {
 
         // Then
         assertNotNull(actual, "Response should not be null")
-        assertFalse("Response should not be empty") { actual.videos.isEmpty() }
+        assertFalse(actual.videos.isEmpty(), "Response should not be empty")
     }
 
     @Test
@@ -191,6 +188,6 @@ internal class VideoRepositoryIntegrationTest {
 
         // Then
         assertNotNull(actual, "Response should not be null")
-        assertTrue("Response should be empty") { actual.videos.isEmpty() }
+        assertTrue(actual.videos.isEmpty(), "Response should be empty")
     }
 }

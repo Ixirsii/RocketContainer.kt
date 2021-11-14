@@ -24,11 +24,11 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.utils.io.ByteReadChannel
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 internal class VideoRepositoryTest {
 
@@ -57,7 +57,7 @@ internal class VideoRepositoryTest {
         assertEquals(video, actual, "Video should equal expected")
         assertEquals(1, mockEngine.requestHistory.size, "Should make 1 requests")
         mockEngine.requestHistory.forEach {
-            assertTrue("URL should contain video ID") { it.url.toString().endsWith(ID.toString()) }
+            assertTrue(it.url.toString().endsWith(ID.toString()), "URL should contain video ID")
         }
     }
 
@@ -73,7 +73,7 @@ internal class VideoRepositoryTest {
         // Then
         assertEquals(3, mockEngine.requestHistory.size, "Should make 3 requests")
         mockEngine.requestHistory.forEach {
-            assertTrue("URL should contain video ID") { it.url.toString().endsWith(ID.toString()) }
+            assertTrue(it.url.toString().endsWith(ID.toString()), "URL should contain video ID")
         }
     }
 
@@ -98,7 +98,7 @@ internal class VideoRepositoryTest {
         assertEquals(videoAssets, actual, "VideoAssets should equal expected")
         assertEquals(1, mockEngine.requestHistory.size, "Should make 1 request")
         mockEngine.requestHistory.forEach {
-            assertTrue("URL should contain video ID") { it.url.toString().contains(ID.toString()) }
+            assertTrue(it.url.toString().contains(ID.toString()), "URL should contain video ID")
         }
     }
 
@@ -123,7 +123,7 @@ internal class VideoRepositoryTest {
         assertEquals(videoAssets, actual, "VideoAssets should equal expected")
         assertEquals(1, mockEngine.requestHistory.size, "Should make 1 request")
         mockEngine.requestHistory.forEach {
-            assertTrue("URL should contain video ID") { it.url.toString().contains(ID.toString()) }
+            assertTrue(it.url.toString().contains(ID.toString()), "URL should contain video ID")
             assertNotNull(it.url.parameters["assetType"], "Query parameters should contain assetType")
         }
     }

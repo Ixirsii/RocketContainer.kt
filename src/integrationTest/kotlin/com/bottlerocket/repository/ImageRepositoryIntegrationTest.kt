@@ -6,14 +6,12 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
 import kotlinx.serialization.json.Json
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
-@Tag("integration")
 internal class ImageRepositoryIntegrationTest {
     private val client = HttpClient(CIO) {
         install(JsonFeature) {
@@ -37,8 +35,8 @@ internal class ImageRepositoryIntegrationTest {
         val actual: Images = underTest.listImages()
 
         // Then
-        Assertions.assertNotNull(actual, "Response should not be null")
-        assertFalse("Response should not be empty") { actual.images.isEmpty() }
+        assertNotNull(actual, "Response should not be null")
+        assertFalse(actual.images.isEmpty(), "Response should not be empty")
     }
 
     @Test
@@ -50,8 +48,8 @@ internal class ImageRepositoryIntegrationTest {
         val actual: Images = underTest.listImages(containerId)
 
         // Then
-        Assertions.assertNotNull(actual, "Response should not be null")
-        assertFalse("Response should not be empty") { actual.images.isEmpty() }
+        assertNotNull(actual, "Response should not be null")
+        assertFalse(actual.images.isEmpty(), "Response should not be empty")
     }
 
     @Test
@@ -63,7 +61,7 @@ internal class ImageRepositoryIntegrationTest {
         val actual: Images = underTest.listImages(containerId)
 
         // Then
-        Assertions.assertNotNull(actual, "Response should not be null")
-        assertTrue("Response should be empty") { actual.images.isEmpty() }
+        assertNotNull(actual, "Response should not be null")
+        assertTrue(actual.images.isEmpty(), "Response should be empty")
     }
 }

@@ -18,8 +18,8 @@ import com.bottlerocket.util.fullContainer
 import com.bottlerocket.util.image
 import com.bottlerocket.util.imagesContainer
 import com.bottlerocket.util.video
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
 internal class DataConverterTest {
 
