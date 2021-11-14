@@ -47,6 +47,16 @@ class ResponseService(
     }
 
     /**
+     * Respond to GET /containers/{containerId}/videos.
+     *
+     * @param containerId container ID from path.
+     * @param call Application call for getting parameters and responding to the request.
+     */
+    suspend fun getVideos(containerId: Int, call: ApplicationCall) {
+        respond(call) { containerService.getVideos(containerId) }
+    }
+
+    /**
      * Respond to GET /containers.
      *
      * @param call Application call for getting parameters and responding to the request.

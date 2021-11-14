@@ -4,6 +4,7 @@ import com.bottlerocket.module.httpClient
 import com.bottlerocket.util.ID
 import com.bottlerocket.util.containerAdvertisement
 import com.bottlerocket.util.containerImage
+import com.bottlerocket.util.containerVideo
 import com.bottlerocket.util.fullContainer
 import io.ktor.application.ApplicationCall
 import io.ktor.client.HttpClient
@@ -92,6 +93,22 @@ internal class ResponseServiceTest {
         // Then
         verify(exactly = 1) {
             containerService.getImages(any())
+        }
+        confirmVerified(containerService)
+    }
+
+    @Test
+    fun `GIVEN success WHEN getVideos THEN responds containers`() {
+        // Given
+        every { containerService.getVideos(any()) } returns listOf(containerVideo)
+        coJustRun { call.respond(any()) }
+
+        // When
+        runBlocking { underTest.getVideos(ID, call) }
+
+        // Then
+        verify(exactly = 1) {
+            containerService.getVideos(any())
         }
         confirmVerified(containerService)
     }
