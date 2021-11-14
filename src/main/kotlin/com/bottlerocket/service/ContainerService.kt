@@ -1,5 +1,7 @@
 package com.bottlerocket.service
 
+import com.bottlerocket.Logging
+import com.bottlerocket.LoggingImpl
 import com.bottlerocket.data.containerService.Advertisement
 import com.bottlerocket.data.containerService.Container
 import com.bottlerocket.data.containerService.Image
@@ -20,7 +22,7 @@ class ContainerService(
     private val containerRepository: ContainerRepository,
     /** Data cache. */
     private val cache: CustomTimeBasedCache<Int, Container> = CustomTimeBasedCache(Duration.ofMinutes(15))
-) {
+) : Logging by LoggingImpl<ContainerService>() {
 
     /**
      * Get advertisements for a container.
@@ -33,6 +35,8 @@ class ContainerService(
      */
     @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun getAdvertisements(containerId: Int): List<Advertisement> {
+        log.debug("Getting advertisements by container {}", containerId)
+
         val container: Container = getContainer(containerId)
 
         return container.ads
@@ -49,11 +53,17 @@ class ContainerService(
      */
     @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun getContainer(containerId: Int): Container {
+        log.debug("Getting container by ID {}", containerId)
+
         val cacheValue: Optional<Container> = cache[containerId]
 
         if (cacheValue.isPresent) {
+            log.debug("Container {} was in cache")
+
             return cacheValue.get()
         }
+
+        log.debug("Container {} was not in cache")
 
         val container: Container = containerRepository.getContainer(containerId)
 
@@ -73,6 +83,8 @@ class ContainerService(
      */
     @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun getImages(containerId: Int): List<Image> {
+        log.debug("Getting images by container {}", containerId)
+
         val container: Container = getContainer(containerId)
 
         return container.images
@@ -89,6 +101,8 @@ class ContainerService(
      */
     @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun getVideos(containerId: Int): List<Video> {
+        log.debug("Getting videos by container {}", containerId)
+
         val container: Container = getContainer(containerId)
 
         return container.videos
@@ -104,6 +118,8 @@ class ContainerService(
      */
     @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun listContainers(): List<Container> {
+        log.debug("Listing containers")
+
         val containers: List<Container> = containerRepository.listContainers()
 
         containers.forEach { cache[it.id] = it }

@@ -1,5 +1,7 @@
 package com.bottlerocket.repository
 
+import com.bottlerocket.Logging
+import com.bottlerocket.LoggingImpl
 import com.bottlerocket.data.advertisementService.Advertisements
 import com.bottlerocket.data.containerService.Advertisement
 import com.bottlerocket.data.containerService.AssetReference
@@ -23,7 +25,7 @@ class ContainerRepository(
     private val advertisementRepository: AdvertisementRepository,
     private val imageRepository: ImageRepository,
     private val videoRepository: VideoRepository
-) {
+) : Logging by LoggingImpl<ContainerRepository>() {
 
     /**
      * Get a container by ID.
@@ -36,6 +38,8 @@ class ContainerRepository(
      */
     @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun getContainer(containerId: Int): Container {
+        log.debug("Getting container {}", containerId)
+
         val videos: List<Video> = videoRepository.listVideos(containerId).videos
             .map { video ->
                 val assets: List<AssetReference> = videoRepository.listAssetReferences(video.id).videoAssets
@@ -60,6 +64,8 @@ class ContainerRepository(
      */
     @Throws(RedirectResponseException::class, ClientRequestException::class, ServerResponseException::class)
     fun listContainers(): List<Container> {
+        log.debug("Listing containers")
+
         val videos: Map<Int, List<Video>> = getVideos()
         val advertisements: Advertisements = advertisementRepository.listAdvertisements()
         val images: Images = imageRepository.listImages()
